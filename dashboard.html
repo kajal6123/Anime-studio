@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AnimStudio Dashboard</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#10111c;color:white;font-family:Arial,sans-serif}
+header{padding:22px;background:#202235}
+header h1{margin:0;font-size:25px}
+header p{color:#aaa;margin-bottom:0}
+main{max-width:850px;margin:auto;padding:17px}
+.stats{display:flex;gap:10px}
+.stat{background:#25273c;padding:15px;border-radius:13px;flex:1}
+.stat b{font-size:23px}
+.stat small{display:block;color:#aaa;margin-top:5px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.card{background:#202235;border:1px solid #34364c;border-radius:14px;padding:17px;text-decoration:none;color:white;min-height:125px}
+.card .emoji{font-size:28px}
+.card h3{margin:12px 0 6px;font-size:16px}
+.card p{font-size:12px;color:#aaa;margin:0}
+button{width:100%;padding:14px;background:#8b5cf6;color:white;border:0;border-radius:10px;font-size:15px;margin-top:16px}
+footer{text-align:center;color:#777;padding:25px;font-size:12px}
+@media(max-width:360px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>🎬 AnimStudio</h1>
+<p>Your Animation Creation Studio</p>
+</header>
+<main>
+<h2>Welcome Creator 👋</h2>
+<div class="stats">
+<div class="stat"><b id="scenes">0</b><small>Total Scenes</small></div>
+<div class="stat"><b id="duration">0s</b><small>Video Duration</small></div>
+</div>
+
+<h3>Creative Studio</h3>
+<div class="grid">
+<a class="card" href="index.html">
+<div class="emoji">🧑</div>
+<h3>Character Designer</h3>
+<p>Create and customize characters</p>
+</a>
+<a class="card" href="animations.html">
+<div class="emoji">🏃</div>
+<h3>Animation Library</h3>
+<p>Explore character movements</p>
+</a>
+<a class="card" href="backgrounds.html">
+<div class="emoji">🌄</div>
+<h3>Background Library</h3>
+<p>Choose your story locations</p>
+</a>
+<a class="card" href="editor.html">
+<div class="emoji">🎥</div>
+<h3>Main Editor</h3>
+<p>Create and manage scenes</p>
+</a>
+<a class="card" href="audio.html">
+<div class="emoji">🎵</div>
+<h3>Audio Studio</h3>
+<p>Add voice and sound effects</p>
+</a>
+<a class="card" href="timeline.html">
+<div class="emoji">⏱️</div>
+<h3>Timeline Studio</h3>
+<p>Control scene timing and order</p>
+</a>
+</div>
+
+<a href="editor.html"><button>＋ Create New Video</button></a>
+</main>
+<footer>AnimStudio • Create Stories Your Way</footer>
+
+<script>
+try{
+const project=JSON.parse(localStorage.getItem("animstudio_project")||'{"scenes":[]}');
+const scenes=project.scenes||[];
+document.getElementById("scenes").textContent=scenes.length;
+const total=scenes.reduce((sum,s)=>sum+(Number(s.duration)||0),0);
+document.getElementById("duration").textContent=total+"s";
+}catch(e){}
+</script>
+</body>
+</html>
