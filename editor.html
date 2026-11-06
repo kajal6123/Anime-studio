@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AnimStudio Editor</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#10111c;color:white;font-family:Arial}
+header{padding:16px;background:#1b1c2c;display:flex;justify-content:space-between;align-items:center}
+a{color:#c4b5fd;text-decoration:none}
+main{max-width:900px;margin:auto;padding:15px}
+.panel{background:#202235;border-radius:14px;padding:15px;margin:14px 0}
+h2,h3{margin-top:5px}
+select,input{background:#303249;color:white;border:1px solid #484a63;padding:11px;border-radius:9px;width:100%;margin:6px 0}
+button{background:#8b5cf6;color:white;border:0;padding:11px 14px;border-radius:9px;margin:4px;cursor:pointer}
+button.danger{background:#b83e55}
+.canvas{margin:15px auto;background:#252a42;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border:2px dashed #777;border-radius:8px;max-width:100%}
+.canvas span{color:#aaa;text-align:center}
+.scene{background:#303249;padding:13px;border-radius:10px;margin:10px 0;border:2px solid transparent}
+.scene.active{border-color:#a78bfa}
+.scene button{font-size:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row>*{flex:1}
+small{color:#aaa}
+</style>
+</head>
+<body>
+<header>
+<a href="backgrounds.html">← Backgrounds</a>
+<b>🎬 AnimStudio Editor</b>
+<a href="audio.html">🎵 Audio</a>
+</header>
+<main>
+<div class="panel">
+<h2>Video Settings</h2>
+<label>Video Ratio</label>
+<select id="ratio" onchange="changeRatio()">
+<option value="9:16">9:16 — Shorts/Reels</option>
+<option value="16:9">16:9 — YouTube</option>
+<option value="1:1">1:1 — Square</option>
+<option value="4:5">4:5 — Portrait</option>
+</select>
+</div>
+
+<div class="panel">
+<h3>🎥 Scene Preview</h3>
+<div class="canvas" id="canvas">
+<span>Select a scene to preview</span>
+</div>
+<div id="previewInfo">No scene selected</div>
+</div>
+
+<div class="panel">
+<h3>➕ Create New Scene</h3>
+<label>Scene name</label>
+<input id="sceneName" placeholder="Example: Character enters">
+<label>Duration (seconds)</label>
+<input id="duration" type="number" min="1" max="3600" value="5">
+<button onclick="addScene()">+ Add Scene</button>
+</div>
+
+<div class="panel">
+<h3>📚 Your Scenes</h3>
+<div id="sceneList"></div>
+<div class="row">
+<button onclick="saveProject()">💾 Save Project</button>
+<button onclick="downloadProject()">⬇ Export Project</button>
+</div>
+</div>
+
+<div class="panel">
+<h3>Selected Scene</h3>
+<div id="details">Select a scene first.</div>
+<button onclick="downloadScene()">⬇ Download Scene Project</button>
+<button class="danger" onclick="deleteScene()">Delete Scene</button>
+</div>
+</main>
+
+<script>
+let scenes=[];
+let selected=-1;
+
+function changeRatio(){
+ updatePreview();
+}
+
+function addScene(){
+ const name=document.getElementById("sceneName").value.trim()||"Scene "+(scenes.length+1);
+ const duration=Math.max(1,Math.min(3600,Number(document.getElementById("duration").value)||5));
+
+ scenes.push({
+ id:Date.now()+Math.random(),
+ name:name,
+ duration:duration,
+ background:null,
+ animation:null,
+ character:null
+ });
+
+ selected=scenes.length-1;
+ document.getElementById("sceneName").value="";
+ render();
+}
+
+function selectScene(i){
+ selected=i;
+ render();
+}
+
+function render(){
+ const list=document.getElementById("sceneList");
+ list.innerHTML="";
+ scenes.forEach((s,i)=>{
+ const div=document.createElement("div");
+ div.className="scene "+(selected===i?"active":"");
+ const title=document.createElement("b");
+ title.textContent=(i+1)+". "+s.name;
+ const time=document.createElement("small");
+ time.textContent=" • "+s.duration+" seconds";
+ const edit=document.createElement("button");
+ edit.textContent="Select";
+ edit.onclick=()=>selectScene(i);
+ const shorter=document.createElement("button");
+ shorter.textContent="− 1 sec";
+ shorter.onclick=()=>{s.duration=Math.max(1,s.duration-1);render()};
+ const longer=document.createElement("button");
+ longer.textContent="+ 1 sec";
+ longer.onclick=()=>{s.duration=Math.min(3600,s.duration+1);render()};
+ div.append(title,time,document.createElement("br"),edit,shorter,longer);
+ list.appendChild(div);
+ });
+
+ const total=scenes.reduce((sum,s)=>sum+s.duration,0);
+ const summary=document.createElement("p");
+ summary.textContent="Total duration: "+total+" seconds";
+ list.appendChild(summary);
+
+ if(selected>=0&&scenes[selected]){
+ const s=scenes[selected];
+ document.getElementById("details").textContent=
+ s.name+" | "+s.duration+" seconds";
+ document.getElementById("previewInfo").textContent=
+ "Scene "+(selected+1)+": "+s.name+" ("+s.duration+" sec)";
+ }else{
+ document.getElementById("details").textContent="Select a scene first.";
+ document.getElementById("previewInfo").textContent="No scene selected";
+ }
+ updatePreview();
+}
+
+function updatePreview(){
+ const ratio=document.getElementById("ratio").value;
+ const canvas=document.getElementById("canvas");
+ const sizes={
+ "9:16":[270,480],
+ "16:9":[480,270],
+ "1:1":[320,320],
+ "4:5":[320,400]
+ };
+ const size=sizes[ratio];
+ canvas.style.width="min(100%,"+size[0]+"px)";
+ canvas.style.aspectRatio=ratio.replace(":","/");
+ canvas.style.height="auto";
+}
+
+function saveProject(){
+ const project={
+ name:"My AnimStudio Project",
+ ratio:document.getElementById("ratio").value,
+ scenes:scenes
+ };
+ localStorage.setItem("animstudio_project",JSON.stringify(project));
+ alert("Project saved on this device!");
+}
+
+function downloadProject(){
+ const project={
+ name:"My AnimStudio Project",
+ ratio:document.getElementById("ratio").value,
+ scenes:scenes
+ };
+ downloadFile(project,"animstudio-project.json");
+}
+
+function downloadScene(){
+ if(selected<0||!scenes[selected]){
+ alert("Pehle scene select karo!");
+ return;
+ }
+ downloadFile({
+ ratio:document.getElementById("ratio").value,
+ scene:scenes[selected]
+ },"scene-"+(selected+1)+".json");
+}
+
+function downloadFile(data,name){
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;
+ a.download=name;
+ a.click();
+ URL.revokeObjectURL(url);
+}
+
+function deleteScene(){
+ if(selected<0)return;
+ scenes.splice(selected,1);
+ selected=scenes.length?Math.min(selected,scenes.length-1):-1;
+ render();
+}
+
+function loadProject(){
+ const saved=localStorage.getItem("animstudio_project");
+ if(!saved)return;
+ try{
+ const p=JSON.parse(saved);
+ scenes=p.scenes||[];
+ document.getElementById("ratio").value=p.ratio||"9:16";
+ }catch(e){}
+}
+loadProject();
+render();
+</script>
+</body>
+</html>
