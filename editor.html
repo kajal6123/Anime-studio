@@ -4,329 +4,648 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AnimStudio Editor</title>
+<title>AnimStudio - Scene Editor</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#10111c;color:white;font-family:Arial}
-header{padding:16px;background:#202235;display:flex;justify-content:space-between;gap:8px}
-a{color:#c4b5fd;text-decoration:none}
-main{max-width:850px;margin:auto;padding:15px}
-.panel{background:#202235;padding:15px;border-radius:14px;margin:14px 0}
-input,select{width:100%;padding:12px;margin:7px 0;background:#303249;color:white;border:1px solid #484a63;border-radius:9px}
-button{background:#8b5cf6;color:white;border:0;padding:11px 14px;border-radius:9px;margin:5px 3px}
-button.red{background:#b83e55}
-.canvas{margin:15px auto;background:#252a42;display:flex;align-items:center;justify-content:center;text-align:center;border:2px dashed #777;border-radius:8px;overflow:hidden;max-width:100%;color:#ddd;padding:15px}
-small{color:#aaa}
-.scene{background:#303249;padding:12px;border-radius:10px;margin:9px 0}
-.scene.active{border:2px solid #a78bfa}
+body{margin:0;background:#0b1020;color:#f4f5ff;font-family:Arial,sans-serif}
+header{padding:16px;background:#151d33;display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+h2,h3{margin:8px 0}
+.logo{font-size:20px;font-weight:bold;color:#ffbd59}
+button,select,input{font:inherit}
+button{border:0;border-radius:10px;padding:10px 13px;background:#34466b;color:white;cursor:pointer}
+button.primary{background:#ff4f91;color:white}
+button.danger{background:#a83b55}
+button:active{transform:scale(.97)}
+main{max-width:1000px;margin:auto;padding:14px}
+.panel{background:#151d33;border:1px solid #293654;border-radius:15px;padding:14px;margin-bottom:14px}
+input,select{width:100%;padding:11px;background:#0c1428;border:1px solid #34466b;color:white;border-radius:9px;margin:6px 0 12px}
+label{font-size:13px;color:#b9c7e6}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1}
+.small{font-size:12px;color:#9eaccb}
+#stageWrap{background:#080d19;padding:12px;border-radius:12px;display:flex;justify-content:center;overflow:hidden}
+#stage{width:100%;max-width:600px;aspect-ratio:9/16;position:relative;overflow:hidden;border:2px solid #53678e;border-radius:8px;background:linear-gradient(#91c9e8 0%,#d6e9b1 65%,#729b55 65%);transform-origin:center}
+#ground{position:absolute;bottom:0;height:24%;width:100%;background:linear-gradient(#6e9c51,#426d3b)}
+#objects{position:absolute;inset:0}
+.asset{position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);width:110px;height:150px;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;cursor:move}
+.asset img,.asset video{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.asset .emoji{font-size:75px;line-height:1}
+.asset.selected{outline:2px dashed #ffbd59;outline-offset:3px}
+.assetName{position:absolute;bottom:-19px;white-space:nowrap;font-size:10px;color:white;text-shadow:0 1px 3px black}
+.assetTools{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.assetTools button{font-size:12px;padding:8px}
+.library{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{background:#0c1428;border:1px solid #34466b;border-radius:10px;padding:10px;text-align:center;min-width:0}
+.tile .emoji{font-size:32px}
+.tile button{width:100%;margin-top:6px;font-size:12px;padding:8px}
+.sceneItem{display:flex;align-items:center;gap:8px;background:#0c1428;padding:10px;border-radius:9px;margin:7px 0}
+.sceneItem span{flex:1;font-size:13px}
+.sceneItem button{padding:7px;font-size:12px}
+#assetList{display:flex;flex-wrap:wrap;gap:7px}
+.assetChip{background:#263653;border-radius:20px;padding:7px 10px;font-size:12px}
+hr{border:0;border-top:1px solid #293654;margin:14px 0}
+input[type=range]{padding:0}
+@media(min-width:700px){.columns{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}}
 </style>
 </head>
 <body>
+
 <header>
-<a href="dashboard.html">← Dashboard</a>
-<b>🎬 Main Editor</b>
-<a href="timeline.html">Timeline →</a>
+  <div class="logo">🎬 AnimStudio</div>
+  <button onclick="location.href='dashboard.html'">⌂ Dashboard</button>
 </header>
+
 <main>
+  <section class="panel">
+    <h2>🎞️ Scene Editor</h2>
+    <label>Project Name</label>
+    <input id="projectName" placeholder="My Animation Story">
+    <label>Video Ratio</label>
+    <select id="ratio">
+      <option value="9/16">9:16 - Shorts / Reels</option>
+      <option value="16/9">16:9 - YouTube Video</option>
+      <option value="1/1">1:1 - Square Post</option>
+      <option value="4/5">4:5 - Portrait Post</option>
+    </select>
+  </section>
 
-<div class="panel">
-<h2 id="projectTitle">My Animation Project</h2>
-<label>Project name</label>
-<input id="projectName" placeholder="My story">
-<label>Video ratio</label>
-<select id="ratio">
-<option value="9:16">9:16 Shorts / Reels</option>
-<option value="16:9">16:9 YouTube</option>
-<option value="1:1">1:1 Square</option>
-<option value="4:5">4:5 Portrait</option>
-</select>
-</div>
+  <div class="columns">
+    <div>
+      <section class="panel">
+        <h3>👁️ Scene Preview</h3>
+        <div id="stageWrap">
+          <div id="stage">
+            <div id="ground"></div>
+            <div id="objects"></div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button onclick="playPreview()">▶ Preview</button>
+          <button onclick="stopPreview()">■ Stop</button>
+          <button onclick="clearSelection()">Deselect</button>
+        </div>
+        <p class="small">Object ko drag karke scene mein position badlo. Object select karke size aur position adjust karo.</p>
+      </section>
 
-<div class="panel">
-<h3>🎥 Scene Preview</h3>
-<div class="canvas" id="canvas">
-Select a scene to preview
-</div>
-<p id="previewInfo">No scene selected</p>
-</div>
+      <section class="panel">
+        <h3>🎯 Selected Object Controls</h3>
+        <label>Size</label>
+        <input id="size" type="range" min="30" max="250" value="110" oninput="changeSize(this.value)">
+        <label>Horizontal Position</label>
+        <input id="posX" type="range" min="0" max="100" value="50" oninput="changePosition()">
+        <label>Vertical Position</label>
+        <input id="posY" type="range" min="0" max="100" value="55" oninput="changePosition()">
+        <label>Duration (seconds)</label>
+        <input id="duration" type="number" min="1" max="300" value="5" onchange="changeDuration(this.value)">
+        <div class="assetTools">
+          <button onclick="bringFront()">Bring Front</button>
+          <button onclick="sendBack()">Send Back</button>
+          <button class="danger" onclick="removeSelected()">Delete Object</button>
+        </div>
+      </section>
+    </div>
 
-<div class="panel">
-<h3>🧑 Character</h3>
-<select id="character"></select>
-<p><small>Characters saved in Character Designer will appear here.</small></p>
+    <div>
+      <section class="panel">
+        <h3>🧍 Character Library</h3>
+        <p class="small">Apna character PNG, JPG ya WebP image mein upload karo.</p>
+        <input type="file" id="characterFile" accept="image/png,image/jpeg,image/webp">
+        <button class="primary" onclick="uploadCharacter()">＋ Upload Character</button>
+        <div id="characterLibrary" class="library" style="margin-top:12px"></div>
+      </section>
 
-<h3>🏃 Animation</h3>
-<select id="animation"></select>
+      <section class="panel">
+        <h3>🎭 Animation Upload</h3>
+        <p class="small">GIF ya video upload karo. Uploaded animation ko scene mein add kar sakte ho.</p>
+        <input type="file" id="animationFile" accept="image/gif,video/mp4,video/webm,video/quicktime">
+        <button class="primary" onclick="uploadAnimation()">＋ Upload Animation</button>
+        <div id="animationLibrary" class="library" style="margin-top:12px"></div>
+      </section>
 
-<h3>🌄 Background</h3>
-<select id="background"></select>
+      <section class="panel">
+        <h3>🚗 Vehicles & Objects</h3>
+        <p class="small">Ready-made objects ko scene mein add karo.</p>
+        <div class="library" id="vehicleLibrary"></div>
+      </section>
 
-<h3>⏱️ Scene Duration</h3>
-<input id="duration" type="number" min="1" max="3600" value="5">
-<button onclick="addScene()">＋ Add Scene</button>
-<button onclick="updateScene()">Update Selected Scene</button>
-</div>
+      <section class="panel">
+        <h3>🌄 Background</h3>
+        <select id="background" onchange="changeBackground(this.value)">
+          <option value="village">Village</option>
+          <option value="horror">Horror Night</option>
+          <option value="jungle">Jungle</option>
+          <option value="city">City</option>
+          <option value="school">School</option>
+          <option value="kitchen">Kitchen</option>
+          <option value="room">Room</option>
+          <option value="sunset">Sunset</option>
+          <option value="snow">Snow</option>
+          <option value="custom">Custom Background Upload</option>
+        </select>
+        <input type="file" id="backgroundFile" accept="image/*" onchange="uploadBackground()">
+      </section>
+    </div>
+  </div>
 
-<div class="panel">
-<h3>📚 Scenes</h3>
-<div id="sceneList"></div>
-<p id="total">Total duration: 0 seconds</p>
-<button onclick="saveProject()">💾 Save Project</button>
-<button onclick="downloadProject()">⬇ Export Project JSON</button>
-</div>
+  <section class="panel">
+    <h3>📦 Scene Objects</h3>
+    <div id="assetList" class="small">No objects added yet.</div>
+  </section>
 
-<div class="panel">
-<h3>🔗 Other Studio Modules</h3>
-<p><a href="index.html">🧑 Character Designer</a></p>
-<p><a href="animations.html">🏃 Animation Library</a></p>
-<p><a href="backgrounds.html">🌄 Background Library</a></p>
-<p><a href="audio.html">🎵 Audio Studio</a></p>
-<p><a href="timeline.html">⏱️ Timeline Studio</a></p>
-<p><a href="projects.html">📁 My Projects</a></p>
-</div>
+  <section class="panel">
+    <h3>🎬 Story Scenes</h3>
+    <div id="sceneList"></div>
+    <div class="row">
+      <button class="primary" onclick="addScene()">＋ Add Scene</button>
+      <button onclick="duplicateScene()">Duplicate Scene</button>
+      <button class="danger" onclick="deleteScene()">Delete Scene</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3>💾 Save Project</h3>
+    <div class="row">
+      <button class="primary" onclick="saveProject()">Save Project</button>
+      <button onclick="exportProject()">Export JSON</button>
+    </div>
+    <p id="status" class="small">Project not saved yet.</p>
+  </section>
+
+  <section class="panel">
+    <h3>🔗 Other Modules</h3>
+    <div class="row">
+      <button onclick="location.href='index.html'">Character Designer</button>
+      <button onclick="location.href='animations.html'">Animations</button>
+      <button onclick="location.href='backgrounds.html'">Backgrounds</button>
+      <button onclick="location.href='audio.html'">Audio Studio</button>
+      <button onclick="location.href='timeline.html'">Timeline</button>
+    </div>
+  </section>
 </main>
 
 <script>
-const PROJECT_KEY="animstudio_project";
-const PROJECTS_KEY="animstudio_projects";
+const DB_NAME="AnimStudioAssetsDB";
+const DB_STORE="assets";
+let db=null;
+let assets=[];
+let selectedId=null;
+let project=null;
+let currentScene=0;
+let previewTimer=null;
+let drag=null;
 
-let project={id:Date.now().toString(),name:"My Story",ratio:"9:16",scenes:[]};
-let selected=-1;
+const vehicles=[
+ {name:"Car",emoji:"🚗"},
+ {name:"Auto Rickshaw",emoji:"🛺"},
+ {name:"Bicycle",emoji:"🚲"},
+ {name:"Motorcycle",emoji:"🏍️"},
+ {name:"Bus",emoji:"🚌"},
+ {name:"Scooter",emoji:"🛵"},
+ {name:"Truck",emoji:"🚚"},
+ {name:"Train",emoji:"🚆"},
+ {name:"Airplane",emoji:"✈️"},
+ {name:"Boat",emoji:"⛵"},
+ {name:"Chair",emoji:"🪑"},
+ {name:"Table",emoji:"🪵"},
+ {name:"Tree",emoji:"🌳"},
+ {name:"House",emoji:"🏠"},
+ {name:"Food",emoji:"🍲"},
+ {name:"Phone",emoji:"📱"}
+];
 
-function read(key,fallback){
- try{
- const value=JSON.parse(localStorage.getItem(key));
- return value===null?fallback:value;
- }catch(e){return fallback}
-}
+const backgrounds={
+ village:"linear-gradient(#8bd0ed 0%,#d5e9ad 65%,#71984c 65%)",
+ horror:"linear-gradient(#090d23 0%,#34334d 65%,#25252d 65%)",
+ jungle:"linear-gradient(#5b9b71 0%,#b6c878 65%,#315c38 65%)",
+ city:"linear-gradient(#8bc6e8 0%,#c7d4dc 65%,#626b7a 65%)",
+ school:"linear-gradient(#9ed5ed 0%,#dce9c5 65%,#739b55 65%)",
+ kitchen:"linear-gradient(#e8d5bd 0%,#d6c2a8 65%,#927b66 65%)",
+ room:"linear-gradient(#b6a0d2 0%,#e7d8c7 65%,#8b6d5a 65%)",
+ sunset:"linear-gradient(#f7a45e 0%,#bd6b7d 65%,#55506d 65%)",
+ snow:"linear-gradient(#9fcbe0 0%,#e7f2f5 65%,#d4e2e8 65%)"
+};
 
-function getCharacters(){
- const data=read("animstudio_characters",[]);
- if(Array.isArray(data))return data;
- if(data&&Array.isArray(data.characters))return data.characters;
- if(data&&typeof data==="object")return Object.values(data);
- return [];
-}
+function uid(){return "a"+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 
-function getAnimations(){
- const data=read("animstudio_character_animations",[]);
- if(Array.isArray(data))return data;
- if(data&&Array.isArray(data.animations))return data.animations;
- if(data&&typeof data==="object")return Object.values(data);
- return [];
-}
-
-function fillSelect(id,items,placeholder,getName){
- const el=document.getElementById(id);
- el.innerHTML="";
- const first=document.createElement("option");
- first.value="";
- first.textContent=placeholder;
- el.appendChild(first);
- items.forEach((item,i)=>{
- const option=document.createElement("option");
- option.value=String(i);
- option.textContent=getName(item,i);
- el.appendChild(option);
+function openDB(){
+ return new Promise((resolve,reject)=>{
+  const req=indexedDB.open(DB_NAME,1);
+  req.onupgradeneeded=()=>{
+   const d=req.result;
+   if(!d.objectStoreNames.contains(DB_STORE))d.createObjectStore(DB_STORE,{keyPath:"id"});
+  };
+  req.onsuccess=()=>{db=req.result;resolve(db)};
+  req.onerror=()=>reject(req.error);
  });
 }
 
-let characters=[];
-let animations=[];
-let backgrounds=[];
+function putAsset(item){
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(DB_STORE,"readwrite");
+  tx.objectStore(DB_STORE).put(item);
+  tx.oncomplete=resolve;
+  tx.onerror=()=>reject(tx.error);
+ });
+}
 
-function loadLibraries(){
- characters=getCharacters();
- animations=getAnimations();
- const savedBg=read("animstudio_selected_background",null);
+function getAssets(){
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(DB_STORE,"readonly");
+  const req=tx.objectStore(DB_STORE).getAll();
+  req.onsuccess=()=>resolve(req.result||[]);
+  req.onerror=()=>reject(req.error);
+ });
+}
 
- fillSelect("character",characters,"Choose character",
- (c,i)=>c.name||c.title||c.characterName||("Character "+(i+1)));
+function getAsset(id){return assets.find(a=>a.id===id)}
 
- fillSelect("animation",animations,"Choose animation",
- (a,i)=>a.name||a.animation||a.action||("Animation "+(i+1)));
+function defaultScene(){
+ return {
+  id:uid(),
+  characterId:"",
+  characterName:"",
+  animation:"idle",
+  animationName:"Standing",
+  background:"village",
+  duration:5,
+  x:50,y:55,scale:110,
+  audio:null,
+  objects:[]
+ };
+}
 
- backgrounds=savedBg?[savedBg]:[];
- fillSelect("background",backgrounds,
- savedBg?savedBg.name:"No saved background",
- b=>b.name||"Selected Background");
+function initProject(){
+ let old=null;
+ try{old=JSON.parse(localStorage.getItem("animstudio_project")||"null")}catch(e){}
+ project=old&&Array.isArray(old.scenes)?old:{
+  name:"My Animation Story",
+  ratio:"9/16",
+  scenes:[defaultScene()]
+ };
+ if(!project.scenes.length)project.scenes=[defaultScene()];
+ project.scenes=project.scenes.map(s=>({
+  ...defaultScene(),...s,
+  objects:Array.isArray(s.objects)?s.objects:[]
+ }));
+ currentScene=Math.min(project.scenes.length-1,0);
+ document.getElementById("projectName").value=project.name||"My Animation Story";
+ document.getElementById("ratio").value=project.ratio||"9/16";
+ renderAll();
+}
 
- const bg=document.getElementById("background");
- if(!savedBg){
- const note=document.createElement("option");
- note.value="";
- note.textContent="Choose a background in Background Library";
- bg.appendChild(note);
+function scene(){return project.scenes[currentScene]}
+
+function renderAll(){
+ renderSceneList();
+ renderStage();
+ renderObjects();
+ renderLibraries();
+}
+
+function renderLibraries(){
+ const chars=assets.filter(a=>a.type==="character");
+ const anims=assets.filter(a=>a.type==="animation");
+ document.getElementById("characterLibrary").innerHTML=chars.length?"":"<p class='small'>Abhi koi custom character upload nahi hua.</p>";
+ chars.forEach(a=>{
+  const el=document.createElement("div");
+  el.className="tile";
+  el.innerHTML=`<div>🧍</div><div class="small"></div><button>Add to Scene</button>`;
+  el.querySelector(".small").textContent=a.name;
+  el.querySelector("button").onclick=()=>addAssetToScene(a.id);
+  document.getElementById("characterLibrary").appendChild(el);
+ });
+ document.getElementById("animationLibrary").innerHTML=anims.length?"":"<p class='small'>Abhi koi animation upload nahi hui.</p>";
+ anims.forEach(a=>{
+  const el=document.createElement("div");
+  el.className="tile";
+  el.innerHTML=`<div>🎞️</div><div class="small"></div><button>Add to Scene</button>`;
+  el.querySelector(".small").textContent=a.name;
+  el.querySelector("button").onclick=()=>addAssetToScene(a.id);
+  document.getElementById("animationLibrary").appendChild(el);
+ });
+ const v=document.getElementById("vehicleLibrary");
+ v.innerHTML="";
+ vehicles.forEach(item=>{
+  const el=document.createElement("div");
+  el.className="tile";
+  el.innerHTML=`<div class="emoji">${item.emoji}</div><div class="small"></div><button>Add</button>`;
+  el.querySelector(".small").textContent=item.name;
+  el.querySelector("button").onclick=()=>addEmoji(item);
+  v.appendChild(el);
+ });
+}
+
+function uploadCharacter(){
+ const file=document.getElementById("characterFile").files[0];
+ if(!file)return alert("Pehle character image select karo.");
+ if(!file.type.startsWith("image/"))return alert("Image file select karo.");
+ saveUploaded(file,"character");
+}
+
+function uploadAnimation(){
+ const file=document.getElementById("animationFile").files[0];
+ if(!file)return alert("Pehle GIF ya video select karo.");
+ if(!file.type.startsWith("image/")&&!file.type.startsWith("video/"))return alert("GIF ya video file select karo.");
+ saveUploaded(file,"animation");
+}
+
+async function saveUploaded(file,type){
+ try{
+  const item={id:uid(),name:file.name,type,mime:file.type,blob:file,created:Date.now()};
+  await putAsset(item);
+  assets=await getAssets();
+  renderLibraries();
+  document.getElementById("status").textContent=file.name+" library mein save ho gaya.";
+ }catch(e){
+  alert("Upload save nahi ho paya. Browser storage space check karo.");
  }
 }
 
-function loadProject(){
- const active=read(PROJECT_KEY,null);
- if(active&&Array.isArray(active.scenes)){
- project=active;
- }
- document.getElementById("projectName").value=project.name||"My Story";
- document.getElementById("ratio").value=project.ratio||"9:16";
- render();
+function addEmoji(item){
+ addObject({
+  id:uid(),kind:"emoji",name:item.name,emoji:item.emoji,
+  x:50,y:55,size:110
+ });
 }
 
-function getSelection(id,items){
- const value=document.getElementById(id).value;
- if(value==="")return null;
- return items[Number(value)]||null;
+function addAssetToScene(id){
+ const a=getAsset(id);
+ if(!a)return;
+ addObject({
+  id:uid(),kind:"upload",assetId:id,name:a.name,
+  x:50,y:55,size:120
+ });
+}
+
+function addObject(obj){
+ scene().objects.push(obj);
+ selectedId=obj.id;
+ saveProject(false);
+ renderAll();
+}
+
+function renderStage(){
+ const s=scene();
+ const stage=document.getElementById("stage");
+ stage.style.aspectRatio=project.ratio||"9/16";
+ stage.style.background=backgrounds[s.background]||backgrounds.village;
+ stage.style.backgroundSize="cover";
+ stage.style.backgroundPosition="center";
+ if(s.background==="custom"&&s.backgroundAsset){
+  const a=getAsset(s.backgroundAsset);
+  if(a)stage.style.backgroundImage=`url("${URL.createObjectURL(a.blob)}")`;
+ }
+ document.getElementById("background").value=s.background||"village";
+ document.getElementById("duration").value=s.duration||5;
+ document.getElementById("objects").innerHTML="";
+ (s.objects||[]).forEach(obj=>{
+  const el=document.createElement("div");
+  el.className="asset"+(obj.id===selectedId?" selected":"");
+  el.dataset.id=obj.id;
+  el.style.left=obj.x+"%";
+  el.style.top=obj.y+"%";
+  el.style.width=obj.size+"px";
+  el.style.height=obj.size*1.25+"px";
+  if(obj.kind==="emoji"){
+   const em=document.createElement("div");
+   em.className="emoji";
+   em.textContent=obj.emoji;
+   el.appendChild(em);
+  }else{
+   const a=getAsset(obj.assetId);
+   if(a){
+    const url=URL.createObjectURL(a.blob);
+    let media;
+    if(a.mime.startsWith("video/")){
+     media=document.createElement("video");
+     media.muted=true;media.loop=true;media.autoplay=true;media.playsInline=true;
+    }else{
+     media=document.createElement("img");
+    }
+    media.src=url;
+    el.appendChild(media);
+   }else{
+    el.textContent="Missing asset";
+   }
+  }
+  const name=document.createElement("div");
+  name.className="assetName";
+  name.textContent=obj.name||"Object";
+  el.appendChild(name);
+  el.addEventListener("pointerdown",startDrag);
+  el.addEventListener("click",e=>{
+   e.stopPropagation();
+   selectedId=obj.id;
+   updateControls();
+   renderStage();
+  });
+  document.getElementById("objects").appendChild(el);
+ });
+ updateControls();
+}
+
+function startDrag(e){
+ const el=e.currentTarget;
+ const id=el.dataset.id;
+ selectedId=id;
+ const obj=scene().objects.find(o=>o.id===id);
+ if(!obj)return;
+ const rect=document.getElementById("stage").getBoundingClientRect();
+ drag={id,rect};
+ el.setPointerCapture(e.pointerId);
+ const move=ev=>{
+  if(!drag)return;
+  const x=Math.max(0,Math.min(100,(ev.clientX-rect.left)/rect.width*100));
+  const y=Math.max(0,Math.min(100,(ev.clientY-rect.top)/rect.height*100));
+  obj.x=Math.round(x);obj.y=Math.round(y);
+  el.style.left=obj.x+"%";el.style.top=obj.y+"%";
+  document.getElementById("posX").value=obj.x;
+  document.getElementById("posY").value=obj.y;
+ };
+ const end=()=>{
+  drag=null;
+  el.removeEventListener("pointermove",move);
+  el.removeEventListener("pointerup",end);
+  saveProject(false);
+ };
+ el.addEventListener("pointermove",move);
+ el.addEventListener("pointerup",end);
+ updateControls();
+}
+
+function updateControls(){
+ const o=scene().objects.find(x=>x.id===selectedId);
+ document.getElementById("size").value=o?.size||110;
+ document.getElementById("posX").value=o?.x||50;
+ document.getElementById("posY").value=o?.y||55;
+}
+
+function changeSize(v){
+ const o=scene().objects.find(x=>x.id===selectedId);
+ if(!o)return;
+ o.size=Number(v);renderStage();saveProject(false);
+}
+function changePosition(){
+ const o=scene().objects.find(x=>x.id===selectedId);
+ if(!o)return;
+ o.x=Number(document.getElementById("posX").value);
+ o.y=Number(document.getElementById("posY").value);
+ renderStage();saveProject(false);
+}
+function changeDuration(v){
+ scene().duration=Math.max(1,Math.min(300,Number(v)||5));
+ saveProject(false);
+}
+function clearSelection(){selectedId=null;renderStage()}
+function removeSelected(){
+ if(!selectedId)return;
+ scene().objects=scene().objects.filter(o=>o.id!==selectedId);
+ selectedId=null;renderAll();saveProject(false);
+}
+function bringFront(){
+ const arr=scene().objects;
+ const i=arr.findIndex(o=>o.id===selectedId);
+ if(i<0)return;
+ const [o]=arr.splice(i,1);arr.push(o);
+ renderStage();saveProject(false);
+}
+function sendBack(){
+ const arr=scene().objects;
+ const i=arr.findIndex(o=>o.id===selectedId);
+ if(i<0)return;
+ const [o]=arr.splice(i,1);arr.unshift(o);
+ renderStage();saveProject(false);
+}
+
+function changeBackground(v){
+ scene().background=v;
+ if(v!=="custom")scene().backgroundAsset=null;
+ renderStage();saveProject(false);
+}
+async function uploadBackground(){
+ const file=document.getElementById("backgroundFile").files[0];
+ if(!file)return;
+ if(!file.type.startsWith("image/"))return alert("Image select karo.");
+ const item={id:uid(),name:file.name,type:"background",mime:file.type,blob:file,created:Date.now()};
+ await putAsset(item);
+ assets=await getAssets();
+ scene().background="custom";
+ scene().backgroundAsset=item.id;
+ renderStage();saveProject(false);
+}
+
+function renderObjects(){
+ const box=document.getElementById("assetList");
+ const arr=scene().objects||[];
+ if(!arr.length){box.textContent="No objects added yet.";return}
+ box.innerHTML="";
+ arr.forEach(o=>{
+  const chip=document.createElement("button");
+  chip.className="assetChip";
+  chip.textContent=(o.kind==="emoji"?o.emoji+" ":"🧩 ")+o.name;
+  chip.onclick=()=>{selectedId=o.id;renderStage()};
+  box.appendChild(chip);
+ });
+}
+
+function renderSceneList(){
+ const box=document.getElementById("sceneList");
+ box.innerHTML="";
+ project.scenes.forEach((s,i)=>{
+  const row=document.createElement("div");
+  row.className="sceneItem";
+  const title=document.createElement("span");
+  title.textContent=(i+1)+". Scene • "+(s.duration||5)+" sec";
+  const open=document.createElement("button")
+  open.onclick=()=>{currentScene=i;selectedId=null;renderAll()};
+  row.append(title,open);
+  box.appendChild(row);
+ });
 }
 
 function addScene(){
- const duration=Math.max(1,Math.min(3600,
- Number(document.getElementById("duration").value)||5));
-
- project.scenes.push({
- id:Date.now().toString()+Math.random(),
- name:"Scene "+(project.scenes.length+1),
- duration:duration,
- character:getSelection("character",characters),
- animation:getSelection("animation",animations),
- background:getSelection("background",backgrounds)
- });
-
- selected=project.scenes.length-1;
- saveProject(false);
- render();
+ project.scenes.push(defaultScene());
+ currentScene=project.scenes.length-1;
+ selectedId=null;renderAll();saveProject(false);
+}
+function duplicateScene(){
+ const copy=JSON.parse(JSON.stringify(scene()));
+ copy.id=uid();
+ copy.objects=copy.objects.map(o=>({...o,id:uid()}));
+ project.scenes.splice(currentScene+1,0,copy);
+ currentScene++;selectedId=null;renderAll();saveProject(false);
+}
+function deleteScene(){
+ if(project.scenes.length<=1)return alert("Kam se kam ek scene hona zaroori hai.");
+ project.scenes.splice(currentScene,1);
+ currentScene=Math.max(0,currentScene-1);
+ selectedId=null;renderAll();saveProject(false);
+  }
+ function deleteScene(){
+ if(project.scenes.length<=1)return alert("Kam se kam ek scene hona zaroori hai.");
+ project.scenes.splice(currentScene,1);
+ currentScene=Math.max(0,currentScene-1);
+ selectedId=null;renderAll();saveProject(false);
 }
 
-function updateScene(){
- if(selected<0||!project.scenes[selected]){
- alert("Pehle scene select karo.");
- return;
- }
-
- const s=project.scenes[selected];
- s.duration=Math.max(1,Math.min(3600,
- Number(document.getElementById("duration").value)||5));
- s.character=getSelection("character",characters);
- s.animation=getSelection("animation",animations);
- s.background=getSelection("background",backgrounds);
- saveProject(false);
- render();
+function playPreview(){
+ stopPreview();
+ const objects=document.querySelectorAll(".asset video");
+ objects.forEach(v=>v.play().catch(()=>{}));
+ document.getElementById("status").textContent="Preview running. GIF/video assets will play if supported by browser.";
+}
+function stopPreview(){
+ document.querySelectorAll(".asset video").forEach(v=>v.pause());
+ if(previewTimer)clearInterval(previewTimer);
+ previewTimer=null;
 }
 
-function selectScene(i){
- selected=i;
- const s=project.scenes[i];
- document.getElementById("duration").value=s.duration||5;
- selectLibraryItem("character",characters,s.character);
- selectLibraryItem("animation",animations,s.animation);
- selectLibraryItem("background",backgrounds,s.background);
- render();
-}
-
-function selectLibraryItem(id,items,value){
- const index=items.findIndex(x=>JSON.stringify(x)===JSON.stringify(value));
- document.getElementById(id).value=index>=0?String(index):"";
-}
-
-function deleteScene(i){
- if(!confirm("Delete this scene?"))return;
- project.scenes.splice(i,1);
- selected=-1;
- saveProject(false);
- render();
-}
-
-function render(){
- const list=document.getElementById("sceneList");
- list.innerHTML="";
- let total=0;
-
- project.scenes.forEach((s,i)=>{
- total+=Number(s.duration)||0;
- const card=document.createElement("div");
- card.className="scene"+(selected===i?" active":"");
-
- const title=document.createElement("b");
- title.textContent=(i+1)+". "+s.name;
-
- const info=document.createElement("p");
- info.textContent=(s.duration||0)+" sec • "+
- (s.character?.name||s.character?.characterName||"No character")+" • "+
- (s.animation?.name||s.animation?.animation||"No animation");
-
- const select=document.createElement("button");
- select.textContent="Select";
- select.onclick=()=>selectScene(i);
-
- const del=document.createElement("button");
- del.className="red";
- del.textContent="Delete";
- del.onclick=()=>deleteScene(i);
-
- card.append(title,info,select,del);
- list.appendChild(card);
- });
-
- document.getElementById("total").textContent="Total duration: "+total+" seconds";
- updatePreview();
-}
-
-function updatePreview(){
- const ratio=document.getElementById("ratio").value;
- const canvas=document.getElementById("canvas");
- canvas.style.aspectRatio=ratio.replace(":","/");
- canvas.style.width=ratio==="16:9"?"100%":"min(100%,320px)";
- if(selected<0||!project.scenes[selected]){
- canvas.textContent="Select a scene to preview";
- document.getElementById("previewInfo").textContent="No scene selected";
- return;
- }
-
- const s=project.scenes[selected];
- const char=s.character?.name||s.character?.characterName||"No character";
- const anim=s.animation?.name||s.animation?.animation||"No animation";
- const bg=s.background?.name||"No background";
-
- canvas.innerHTML="";
- const content=document.createElement("div");
- content.textContent="🧑 "+char+" | 🏃 "+anim+" | 🌄 "+bg;
- canvas.appendChild(content);
-
- document.getElementById("previewInfo").textContent=
- s.name+" • "+s.duration+" seconds";
-}
-
-function saveProject(showMessage=true){
- project.name=document.getElementById("projectName").value.trim()||"My Story";
+function saveProject(show=true){
+ project.name=document.getElementById("projectName").value||"My Animation Story";
  project.ratio=document.getElementById("ratio").value;
-
- localStorage.setItem(PROJECT_KEY,JSON.stringify(project));
-
- let projects=read(PROJECTS_KEY,[]);
+ localStorage.setItem("animstudio_project",JSON.stringify(project));
+ let projects=[];
+ try{projects=JSON.parse(localStorage.getItem("animstudio_projects")||"[]")}catch(e){}
  if(!Array.isArray(projects))projects=[];
-
- const index=projects.findIndex(p=>p.id===project.id);
- if(index>=0)projects[index]=JSON.parse(JSON.stringify(project));
- else projects.push(JSON.parse(JSON.stringify(project)));
-
- localStorage.setItem(PROJECTS_KEY,JSON.stringify(projects));
- document.getElementById("projectTitle").textContent=project.name;
-
- if(showMessage)alert("Project saved!");
+ const i=projects.findIndex(p=>p.id===project.id);
+ const saved={...project,id:project.id||"project-main",updated:Date.now()};
+ project.id=saved.id;
+ if(i>=0)projects[i]=saved;else projects.push(saved);
+ localStorage.setItem("animstudio_projects",JSON.stringify(projects));
+ if(show)document.getElementById("status").textContent="✅ Project saved successfully.";
 }
 
-function downloadProject(){
+function exportProject(){
  saveProject(false);
  const blob=new Blob([JSON.stringify(project,null,2)],{type:"application/json"});
  const url=URL.createObjectURL(blob);
  const a=document.createElement("a");
- a.href=url;
- a.download="animstudio-project.json";
- a.click();
+ a.href=url;a.download="animstudio-project.json";a.click();
  URL.revokeObjectURL(url);
+ document.getElementById("status").textContent="Project JSON exported. Uploaded media files are stored separately in this browser.";
 }
 
-document.getElementById("ratio").addEventListener("change",updatePreview);
+document.getElementById("ratio").addEventListener("change",()=>{
+ project.ratio=document.getElementById("ratio").value;
+ renderStage();saveProject(false);
+});
+document.getElementById("projectName").addEventListener("change",()=>saveProject(false));
+document.getElementById("stage").addEventListener("click",e=>{
+ if(e.target.id==="stage"||e.target.id==="ground")clearSelection();
+});
 
-loadLibraries();
-loadProject();
+(async function start(){
+ try{
+  await openDB();
+  assets=await getAssets();
+  initProject();
+ }catch(e){
+  alert("Browser storage start nahi ho paya. Chrome mein page open karke try karo.");
+  initProject();
+ }
+})();
 </script>
 </body>
 </html>
+
+ 
