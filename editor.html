@@ -7,645 +7,464 @@
 <title>AnimStudio - Scene Editor</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#0b1020;color:#f4f5ff;font-family:Arial,sans-serif}
-header{padding:16px;background:#151d33;display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
-h2,h3{margin:8px 0}
-.logo{font-size:20px;font-weight:bold;color:#ffbd59}
-button,select,input{font:inherit}
-button{border:0;border-radius:10px;padding:10px 13px;background:#34466b;color:white;cursor:pointer}
-button.primary{background:#ff4f91;color:white}
-button.danger{background:#a83b55}
-button:active{transform:scale(.97)}
-main{max-width:1000px;margin:auto;padding:14px}
-.panel{background:#151d33;border:1px solid #293654;border-radius:15px;padding:14px;margin-bottom:14px}
-input,select{width:100%;padding:11px;background:#0c1428;border:1px solid #34466b;color:white;border-radius:9px;margin:6px 0 12px}
-label{font-size:13px;color:#b9c7e6}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.row>*{flex:1}
-.small{font-size:12px;color:#9eaccb}
-#stageWrap{background:#080d19;padding:12px;border-radius:12px;display:flex;justify-content:center;overflow:hidden}
-#stage{width:100%;max-width:600px;aspect-ratio:9/16;position:relative;overflow:hidden;border:2px solid #53678e;border-radius:8px;background:linear-gradient(#91c9e8 0%,#d6e9b1 65%,#729b55 65%);transform-origin:center}
-#ground{position:absolute;bottom:0;height:24%;width:100%;background:linear-gradient(#6e9c51,#426d3b)}
-#objects{position:absolute;inset:0}
-.asset{position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);width:110px;height:150px;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;cursor:move}
-.asset img,.asset video{width:100%;height:100%;object-fit:contain;pointer-events:none}
-.asset .emoji{font-size:75px;line-height:1}
-.asset.selected{outline:2px dashed #ffbd59;outline-offset:3px}
-.assetName{position:absolute;bottom:-19px;white-space:nowrap;font-size:10px;color:white;text-shadow:0 1px 3px black}
-.assetTools{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.assetTools button{font-size:12px;padding:8px}
-.library{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.tile{background:#0c1428;border:1px solid #34466b;border-radius:10px;padding:10px;text-align:center;min-width:0}
-.tile .emoji{font-size:32px}
-.tile button{width:100%;margin-top:6px;font-size:12px;padding:8px}
-.sceneItem{display:flex;align-items:center;gap:8px;background:#0c1428;padding:10px;border-radius:9px;margin:7px 0}
-.sceneItem span{flex:1;font-size:13px}
-.sceneItem button{padding:7px;font-size:12px}
-#assetList{display:flex;flex-wrap:wrap;gap:7px}
-.assetChip{background:#263653;border-radius:20px;padding:7px 10px;font-size:12px}
-hr{border:0;border-top:1px solid #293654;margin:14px 0}
-input[type=range]{padding:0}
-@media(min-width:700px){.columns{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}}
+body{margin:0;background:#101322;color:#fff;font-family:Arial,sans-serif}
+header{padding:15px;background:#191f35;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+h2{font-size:19px;margin:0}
+button,select,input{border:0;border-radius:9px;padding:10px;background:#252d49;color:white}
+button{cursor:pointer;background:#7657ed;font-weight:bold}
+button.secondary{background:#303953}
+main{padding:12px;max-width:850px;margin:auto}
+.panel{background:#191f35;border:1px solid #303953;border-radius:14px;padding:13px;margin-bottom:13px}
+label{display:block;font-size:12px;color:#b8c2df;margin:10px 0 5px}
+input,select{width:100%;margin-bottom:5px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1;min-width:90px}
+#stageWrap{width:100%;display:flex;justify-content:center;background:#080b15;border-radius:12px;padding:10px}
+canvas{max-width:100%;max-height:65vh;background:#ddd;border-radius:5px;touch-action:none}
+#sceneList{display:flex;gap:7px;overflow:auto}
+.sceneBtn{min-width:90px;background:#303953}
+.sceneBtn.active{background:#7657ed}
+.small{font-size:12px;color:#b8c2df}
 </style>
 </head>
 <body>
-
 <header>
-  <div class="logo">🎬 AnimStudio</div>
-  <button onclick="location.href='dashboard.html'">⌂ Dashboard</button>
+  <h2>🎬 AnimStudio Editor</h2>
+  <button onclick="saveProject()">Save Project</button>
 </header>
 
 <main>
   <section class="panel">
-    <h2>🎞️ Scene Editor</h2>
-    <label>Project Name</label>
-    <input id="projectName" placeholder="My Animation Story">
     <label>Video Ratio</label>
-    <select id="ratio">
-      <option value="9/16">9:16 - Shorts / Reels</option>
-      <option value="16/9">16:9 - YouTube Video</option>
-      <option value="1/1">1:1 - Square Post</option>
-      <option value="4/5">4:5 - Portrait Post</option>
+    <select id="ratio" onchange="changeRatio()">
+      <option value="9:16">9:16 - Shorts / Reels</option>
+      <option value="16:9">16:9 - YouTube</option>
+      <option value="1:1">1:1 - Square</option>
+      <option value="4:5">4:5 - Portrait</option>
     </select>
-  </section>
-
-  <div class="columns">
-    <div>
-      <section class="panel">
-        <h3>👁️ Scene Preview</h3>
-        <div id="stageWrap">
-          <div id="stage">
-            <div id="ground"></div>
-            <div id="objects"></div>
-          </div>
-        </div>
-        <div class="row" style="margin-top:10px">
-          <button onclick="playPreview()">▶ Preview</button>
-          <button onclick="stopPreview()">■ Stop</button>
-          <button onclick="clearSelection()">Deselect</button>
-        </div>
-        <p class="small">Object ko drag karke scene mein position badlo. Object select karke size aur position adjust karo.</p>
-      </section>
-
-      <section class="panel">
-        <h3>🎯 Selected Object Controls</h3>
-        <label>Size</label>
-        <input id="size" type="range" min="30" max="250" value="110" oninput="changeSize(this.value)">
-        <label>Horizontal Position</label>
-        <input id="posX" type="range" min="0" max="100" value="50" oninput="changePosition()">
-        <label>Vertical Position</label>
-        <input id="posY" type="range" min="0" max="100" value="55" oninput="changePosition()">
-        <label>Duration (seconds)</label>
-        <input id="duration" type="number" min="1" max="300" value="5" onchange="changeDuration(this.value)">
-        <div class="assetTools">
-          <button onclick="bringFront()">Bring Front</button>
-          <button onclick="sendBack()">Send Back</button>
-          <button class="danger" onclick="removeSelected()">Delete Object</button>
-        </div>
-      </section>
-    </div>
-
-    <div>
-      <section class="panel">
-        <h3>🧍 Character Library</h3>
-        <p class="small">Apna character PNG, JPG ya WebP image mein upload karo.</p>
-        <input type="file" id="characterFile" accept="image/png,image/jpeg,image/webp">
-        <button class="primary" onclick="uploadCharacter()">＋ Upload Character</button>
-        <div id="characterLibrary" class="library" style="margin-top:12px"></div>
-      </section>
-
-      <section class="panel">
-        <h3>🎭 Animation Upload</h3>
-        <p class="small">GIF ya video upload karo. Uploaded animation ko scene mein add kar sakte ho.</p>
-        <input type="file" id="animationFile" accept="image/gif,video/mp4,video/webm,video/quicktime">
-        <button class="primary" onclick="uploadAnimation()">＋ Upload Animation</button>
-        <div id="animationLibrary" class="library" style="margin-top:12px"></div>
-      </section>
-
-      <section class="panel">
-        <h3>🚗 Vehicles & Objects</h3>
-        <p class="small">Ready-made objects ko scene mein add karo.</p>
-        <div class="library" id="vehicleLibrary"></div>
-      </section>
-
-      <section class="panel">
-        <h3>🌄 Background</h3>
-        <select id="background" onchange="changeBackground(this.value)">
-          <option value="village">Village</option>
-          <option value="horror">Horror Night</option>
-          <option value="jungle">Jungle</option>
-          <option value="city">City</option>
-          <option value="school">School</option>
-          <option value="kitchen">Kitchen</option>
-          <option value="room">Room</option>
-          <option value="sunset">Sunset</option>
-          <option value="snow">Snow</option>
-          <option value="custom">Custom Background Upload</option>
-        </select>
-        <input type="file" id="backgroundFile" accept="image/*" onchange="uploadBackground()">
-      </section>
-    </div>
-  </div>
-
-  <section class="panel">
-    <h3>📦 Scene Objects</h3>
-    <div id="assetList" class="small">No objects added yet.</div>
+    <div id="stageWrap"><canvas id="stage" width="720" height="1280"></canvas></div>
+    <p class="small">Canvas par character ya object ko touch karke select karo. Drag karke position badlo.</p>
   </section>
 
   <section class="panel">
-    <h3>🎬 Story Scenes</h3>
+    <b>🎭 Character</b>
+    <label>Designer Character</label>
+    <select id="characterSelect" onchange="selectCharacter()"></select>
+    <label>Animation</label>
+    <select id="motion">
+      <option value="idle">Idle</option>
+      <option value="walk">Walk</option>
+      <option value="run">Run</option>
+      <option value="wave">Wave</option>
+      <option value="jump">Jump</option>
+      <option value="talk">Talk</option>
+      <option value="cook">Cooking</option>
+      <option value="serve">Serving</option>
+      <option value="shop">Shopkeeping</option>
+      <option value="clean">Cleaning</option>
+      <option value="write">Writing</option>
+      <option value="dance">Dance</option>
+    </select>
+    <label>Character Size</label>
+    <input id="charSize" type="range" min="0.4" max="2" step="0.1" value="1">
+    <label>Custom Character Image (PNG/JPG/WebP)</label>
+    <input type="file" id="characterUpload" accept="image/png,image/jpeg,image/webp">
+    <button class="secondary" onclick="uploadCharacter()">Add Custom Character</button>
+  </section>
+
+  <section class="panel">
+    <b>🌄 Background</b>
+    <select id="background" onchange="render()">
+      <option value="village">Village</option>
+      <option value="city">City</option>
+      <option value="jungle">Jungle</option>
+      <option value="horror">Horror Night</option>
+      <option value="kitchen">Kitchen</option>
+      <option value="room">Room</option>
+      <option value="school">School</option>
+      <option value="sky">Blue Sky</option>
+    </select>
+    <label>Upload Background Image</label>
+    <input type="file" id="backgroundUpload" accept="image/*">
+    <button class="secondary" onclick="uploadBackground()">Use Background Image</button>
+  </section>
+
+  <section class="panel">
+    <b>🚗 Add Objects / Vehicles</b>
+    <div class="row">
+      <button onclick="addObject('🚗','Car')">🚗 Car</button>
+      <button onclick="addObject('🛺','Auto')">🛺 Auto</button>
+      <button onclick="addObject('🚲','Bicycle')">🚲 Cycle</button>
+      <button onclick="addObject('🏍️','Bike')">🏍️ Bike</button>
+      <button onclick="addObject('🚌','Bus')">🚌 Bus</button>
+      <button onclick="addObject('🛵','Scooter')">🛵 Scooter</button>
+      <button onclick="addObject('🏠','House')">🏠 House</button>
+      <button onclick="addObject('🌳','Tree')">🌳 Tree</button>
+      <button onclick="addObject('🪑','Chair')">🪑 Chair</button>
+      <button onclick="addObject('🍲','Food')">🍲 Food</button>
+    </div>
+    <label>Upload Your Own Object / Prop</label>
+    <input type="file" id="objectUpload" accept="image/*">
+    <button class="secondary" onclick="uploadObject()">Add Uploaded Object</button>
+  </section>
+
+  <section class="panel">
+    <b>🎯 Selected Item Controls</b>
+    <p class="small" id="selectedInfo">Select a character or object on the canvas.</p>
+    <label>Horizontal Position</label>
+    <input id="posX" type="range" min="0" max="100" value="50" oninput="updateSelected()">
+    <label>Vertical Position</label>
+    <input id="posY" type="range" min="0" max="100" value="70" oninput="updateSelected()">
+    <label>Size</label>
+    <input id="itemSize" type="range" min="20" max="300" value="100" oninput="updateSelected()">
+    <div class="row">
+      <button class="secondary" onclick="moveLayer(-1)">Send Back</button>
+      <button class="secondary" onclick="moveLayer(1)">Bring Front</button>
+      <button onclick="deleteSelected()">Delete</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <b>⏱️ Scene Settings</b>
+    <label>Scene Duration (seconds)</label>
+    <input id="duration" type="number" min="1" max="600" value="5">
+    <div class="row">
+      <button onclick="addScene()">+ New Scene</button>
+      <button class="secondary" onclick="duplicateScene()">Duplicate</button>
+      <button class="secondary" onclick="deleteScene()">Delete Scene</button>
+    </div>
+    <label>All Scenes</label>
     <div id="sceneList"></div>
-    <div class="row">
-      <button class="primary" onclick="addScene()">＋ Add Scene</button>
-      <button onclick="duplicateScene()">Duplicate Scene</button>
-      <button class="danger" onclick="deleteScene()">Delete Scene</button>
-    </div>
   </section>
 
   <section class="panel">
-    <h3>💾 Save Project</h3>
     <div class="row">
-      <button class="primary" onclick="saveProject()">Save Project</button>
-      <button onclick="exportProject()">Export JSON</button>
+      <button onclick="saveProject()">💾 Save</button>
+      <button class="secondary" onclick="exportJSON()">Download Project JSON</button>
     </div>
-    <p id="status" class="small">Project not saved yet.</p>
-  </section>
-
-  <section class="panel">
-    <h3>🔗 Other Modules</h3>
-    <div class="row">
-      <button onclick="location.href='index.html'">Character Designer</button>
-      <button onclick="location.href='animations.html'">Animations</button>
-      <button onclick="location.href='backgrounds.html'">Backgrounds</button>
-      <button onclick="location.href='audio.html'">Audio Studio</button>
-      <button onclick="location.href='timeline.html'">Timeline</button>
-    </div>
+    <p class="small" id="status">Ready</p>
   </section>
 </main>
 
+<script src="rig.js"></script>
 <script>
-const DB_NAME="AnimStudioAssetsDB";
-const DB_STORE="assets";
-let db=null;
-let assets=[];
-let selectedId=null;
-let project=null;
-let currentScene=0;
-let previewTimer=null;
-let drag=null;
+"use strict";
 
-const vehicles=[
- {name:"Car",emoji:"🚗"},
- {name:"Auto Rickshaw",emoji:"🛺"},
- {name:"Bicycle",emoji:"🚲"},
- {name:"Motorcycle",emoji:"🏍️"},
- {name:"Bus",emoji:"🚌"},
- {name:"Scooter",emoji:"🛵"},
- {name:"Truck",emoji:"🚚"},
- {name:"Train",emoji:"🚆"},
- {name:"Airplane",emoji:"✈️"},
- {name:"Boat",emoji:"⛵"},
- {name:"Chair",emoji:"🪑"},
- {name:"Table",emoji:"🪵"},
- {name:"Tree",emoji:"🌳"},
- {name:"House",emoji:"🏠"},
- {name:"Food",emoji:"🍲"},
- {name:"Phone",emoji:"📱"}
-];
+const canvas=document.getElementById("stage");
+const ctx=canvas.getContext("2d");
+const $=id=>document.getElementById(id);
+const DB_NAME="AnimStudioAssetsDB";
+let db=null, characters=[], project={name:"My Animation",scenes:[]};
+let sceneIndex=0,selected={type:"character",id:"character"};
+let customCharacter=null, backgroundImage=null, objectImages={};
+let dragging=false,dragTarget=null,clock=0;
 
 const backgrounds={
- village:"linear-gradient(#8bd0ed 0%,#d5e9ad 65%,#71984c 65%)",
- horror:"linear-gradient(#090d23 0%,#34334d 65%,#25252d 65%)",
- jungle:"linear-gradient(#5b9b71 0%,#b6c878 65%,#315c38 65%)",
- city:"linear-gradient(#8bc6e8 0%,#c7d4dc 65%,#626b7a 65%)",
- school:"linear-gradient(#9ed5ed 0%,#dce9c5 65%,#739b55 65%)",
- kitchen:"linear-gradient(#e8d5bd 0%,#d6c2a8 65%,#927b66 65%)",
- room:"linear-gradient(#b6a0d2 0%,#e7d8c7 65%,#8b6d5a 65%)",
- sunset:"linear-gradient(#f7a45e 0%,#bd6b7d 65%,#55506d 65%)",
- snow:"linear-gradient(#9fcbe0 0%,#e7f2f5 65%,#d4e2e8 65%)"
+ village:["#8ed5f4","#d6f4ff","#78b75b"],
+ city:["#8bc9ec","#d5edff","#777d91"],
+ jungle:["#164b38","#347b4c","#173b2c"],
+ horror:["#11172b","#34334b","#11121c"],
+ kitchen:["#f6d7a5","#f4e6ca","#b98d62"],
+ room:["#9bc4d9","#e8d8c4","#a77b64"],
+ school:["#9bd8f1","#f5e6c9","#77a36b"],
+ sky:["#42a5f5","#c6efff","#74c6ef"]
 };
-
-function uid(){return "a"+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 
 function openDB(){
  return new Promise((resolve,reject)=>{
   const req=indexedDB.open(DB_NAME,1);
-  req.onupgradeneeded=()=>{
-   const d=req.result;
-   if(!d.objectStoreNames.contains(DB_STORE))d.createObjectStore(DB_STORE,{keyPath:"id"});
-  };
-  req.onsuccess=()=>{db=req.result;resolve(db)};
+  req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains("assets"))req.result.createObjectStore("assets",{keyPath:"id"});};
+  req.onsuccess=()=>resolve(req.result);
   req.onerror=()=>reject(req.error);
  });
 }
-
-function putAsset(item){
- return new Promise((resolve,reject)=>{
-  const tx=db.transaction(DB_STORE,"readwrite");
-  tx.objectStore(DB_STORE).put(item);
-  tx.oncomplete=resolve;
-  tx.onerror=()=>reject(tx.error);
+async function storeAsset(file,name){
+ const id="asset_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+ await new Promise((resolve,reject)=>{
+  const tx=db.transaction("assets","readwrite");
+  tx.objectStore("assets").put({id,name,mime:file.type,blob:file});
+  tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+ });
+ return id;
+}
+async function getAsset(id){
+ return new Promise(resolve=>{
+  const tx=db.transaction("assets","readonly");
+  const req=tx.objectStore("assets").get(id);
+  req.onsuccess=()=>resolve(req.result||null);
+  req.onerror=()=>resolve(null);
  });
 }
-
-function getAssets(){
- return new Promise((resolve,reject)=>{
-  const tx=db.transaction(DB_STORE,"readonly");
-  const req=tx.objectStore(DB_STORE).getAll();
-  req.onsuccess=()=>resolve(req.result||[]);
-  req.onerror=()=>reject(req.error);
+function loadCharacters(){
+ try{characters=JSON.parse(localStorage.getItem("animstudio_characters")||"[]");}catch(e){characters=[];}
+ if(!characters.length){
+  characters=[{id:"aarav",name:"Aarav",skin:"#d99b72",hair:"#30201d",outfit:"#4169a9",accent:"#f4bd42"}];
+ }
+ const select=$("characterSelect");
+ select.innerHTML="";
+ characters.forEach((c,i)=>{
+  const op=document.createElement("option");
+  op.value=c.id;op.textContent=c.name||"Character "+(i+1);
+  select.appendChild(op);
  });
 }
-
-function getAsset(id){return assets.find(a=>a.id===id)}
-
-function defaultScene(){
+function newScene(){
  return {
-  id:uid(),
-  characterId:"",
-  characterName:"",
-  animation:"idle",
-  animationName:"Standing",
-  background:"village",
-  duration:5,
-  x:50,y:55,scale:110,
-  audio:null,
-  objects:[]
+  id:"scene_"+Date.now(),name:"Scene "+(project.scenes.length+1),
+  characterId:characters[0]?.id||null,
+  characterName:characters[0]?.name||"Aarav",
+  animation:"idle",background:"village",duration:5,
+  x:50,y:70,scale:1,audio:null,objects:[]
  };
 }
-
-function initProject(){
- let old=null;
- try{old=JSON.parse(localStorage.getItem("animstudio_project")||"null")}catch(e){}
- project=old&&Array.isArray(old.scenes)?old:{
-  name:"My Animation Story",
-  ratio:"9/16",
-  scenes:[defaultScene()]
- };
- if(!project.scenes.length)project.scenes=[defaultScene()];
- project.scenes=project.scenes.map(s=>({
-  ...defaultScene(),...s,
-  objects:Array.isArray(s.objects)?s.objects:[]
- }));
- currentScene=Math.min(project.scenes.length-1,0);
- document.getElementById("projectName").value=project.name||"My Animation Story";
- document.getElementById("ratio").value=project.ratio||"9/16";
- renderAll();
+function current(){return project.scenes[sceneIndex];}
+function loadSceneControls(){
+ const s=current();if(!s)return;
+ $("characterSelect").value=s.characterId||characters[0]?.id||"";
+ $("motion").value=s.animation||"idle";
+ $("background").value=s.background||"village";
+ $("duration").value=s.duration||5;
+ $("charSize").value=s.scale||1;
+ selected={type:"character",id:"character"};
+ syncSelectionControls();
+ renderSceneList();render();
 }
-
-function scene(){return project.scenes[currentScene]}
-
-function renderAll(){
- renderSceneList();
- renderStage();
- renderObjects();
- renderLibraries();
+function selectCharacter(){
+ const s=current(),c=characters.find(x=>x.id===$("characterSelect").value);
+ if(!s||!c)return;
+ s.characterId=c.id;s.characterName=c.name;
+ render();
 }
-
-function renderLibraries(){
- const chars=assets.filter(a=>a.type==="character");
- const anims=assets.filter(a=>a.type==="animation");
- document.getElementById("characterLibrary").innerHTML=chars.length?"":"<p class='small'>Abhi koi custom character upload nahi hua.</p>";
- chars.forEach(a=>{
-  const el=document.createElement("div");
-  el.className="tile";
-  el.innerHTML=`<div>🧍</div><div class="small"></div><button>Add to Scene</button>`;
-  el.querySelector(".small").textContent=a.name;
-  el.querySelector("button").onclick=()=>addAssetToScene(a.id);
-  document.getElementById("characterLibrary").appendChild(el);
- });
- document.getElementById("animationLibrary").innerHTML=anims.length?"":"<p class='small'>Abhi koi animation upload nahi hui.</p>";
- anims.forEach(a=>{
-  const el=document.createElement("div");
-  el.className="tile";
-  el.innerHTML=`<div>🎞️</div><div class="small"></div><button>Add to Scene</button>`;
-  el.querySelector(".small").textContent=a.name;
-  el.querySelector("button").onclick=()=>addAssetToScene(a.id);
-  document.getElementById("animationLibrary").appendChild(el);
- });
- const v=document.getElementById("vehicleLibrary");
- v.innerHTML="";
- vehicles.forEach(item=>{
-  const el=document.createElement("div");
-  el.className="tile";
-  el.innerHTML=`<div class="emoji">${item.emoji}</div><div class="small"></div><button>Add</button>`;
-  el.querySelector(".small").textContent=item.name;
-  el.querySelector("button").onclick=()=>addEmoji(item);
-  v.appendChild(el);
- });
+$("motion").addEventListener("change",()=>{if(current()){current().animation=$("motion").value;render();}});
+$("charSize").addEventListener("input",()=>{if(current()){current().scale=Number($("charSize").value);render();}});
+$("duration").addEventListener("change",()=>{if(current())current().duration=Math.max(1,Number($("duration").value)||5);});
+function changeRatio(){
+ const r=$("ratio").value;
+ const sizes={"9:16":[720,1280],"16:9":[1280,720],"1:1":[900,900],"4:5":[800,1000]};
+ [canvas.width,canvas.height]=sizes[r];
+ render();
 }
-
-function uploadCharacter(){
- const file=document.getElementById("characterFile").files[0];
- if(!file)return alert("Pehle character image select karo.");
- if(!file.type.startsWith("image/"))return alert("Image file select karo.");
- saveUploaded(file,"character");
-}
-
-function uploadAnimation(){
- const file=document.getElementById("animationFile").files[0];
- if(!file)return alert("Pehle GIF ya video select karo.");
- if(!file.type.startsWith("image/")&&!file.type.startsWith("video/"))return alert("GIF ya video file select karo.");
- saveUploaded(file,"animation");
-}
-
-async function saveUploaded(file,type){
- try{
-  const item={id:uid(),name:file.name,type,mime:file.type,blob:file,created:Date.now()};
-  await putAsset(item);
-  assets=await getAssets();
-  renderLibraries();
-  document.getElementById("status").textContent=file.name+" library mein save ho gaya.";
- }catch(e){
-  alert("Upload save nahi ho paya. Browser storage space check karo.");
+function drawBackground(s){
+ if(backgroundImage){
+  ctx.drawImage(backgroundImage,0,0,canvas.width,canvas.height);return;
  }
-}
-
-function addEmoji(item){
- addObject({
-  id:uid(),kind:"emoji",name:item.name,emoji:item.emoji,
-  x:50,y:55,size:110
- });
-}
-
-function addAssetToScene(id){
- const a=getAsset(id);
- if(!a)return;
- addObject({
-  id:uid(),kind:"upload",assetId:id,name:a.name,
-  x:50,y:55,size:120
- });
-}
-
-function addObject(obj){
- scene().objects.push(obj);
- selectedId=obj.id;
- saveProject(false);
- renderAll();
-}
-
-function renderStage(){
- const s=scene();
- const stage=document.getElementById("stage");
- stage.style.aspectRatio=project.ratio||"9/16";
- stage.style.background=backgrounds[s.background]||backgrounds.village;
- stage.style.backgroundSize="cover";
- stage.style.backgroundPosition="center";
- if(s.background==="custom"&&s.backgroundAsset){
-  const a=getAsset(s.backgroundAsset);
-  if(a)stage.style.backgroundImage=`url("${URL.createObjectURL(a.blob)}")`;
- }
- document.getElementById("background").value=s.background||"village";
- document.getElementById("duration").value=s.duration||5;
- document.getElementById("objects").innerHTML="";
- (s.objects||[]).forEach(obj=>{
-  const el=document.createElement("div");
-  el.className="asset"+(obj.id===selectedId?" selected":"");
-  el.dataset.id=obj.id;
-  el.style.left=obj.x+"%";
-  el.style.top=obj.y+"%";
-  el.style.width=obj.size+"px";
-  el.style.height=obj.size*1.25+"px";
-  if(obj.kind==="emoji"){
-   const em=document.createElement("div");
-   em.className="emoji";
-   em.textContent=obj.emoji;
-   el.appendChild(em);
-  }else{
-   const a=getAsset(obj.assetId);
-   if(a){
-    const url=URL.createObjectURL(a.blob);
-    let media;
-    if(a.mime.startsWith("video/")){
-     media=document.createElement("video");
-     media.muted=true;media.loop=true;media.autoplay=true;media.playsInline=true;
-    }else{
-     media=document.createElement("img");
-    }
-    media.src=url;
-    el.appendChild(media);
-   }else{
-    el.textContent="Missing asset";
-   }
+ const colors=backgrounds[s.background]||backgrounds.village;
+ const g=ctx.createLinearGradient(0,0,0,canvas.height);
+ g.addColorStop(0,colors[0]);g.addColorStop(.65,colors[1]);g.addColorStop(1,colors[2]);
+ ctx.fillStyle=g;ctx.fillRect(0,0,canvas.width,canvas.height);
+ ctx.fillStyle="rgba(255,255,255,.2)";
+ ctx.beginPath();ctx.arc(canvas.width*.78,canvas.height*.16,canvas.width*.07,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle=colors[2];
+ ctx.fillRect(0,canvas.height*.78,canvas.width,canvas.height*.22);
+ if(s.background==="city"){
+  for(let i=0;i<8;i++){
+   let x=i*canvas.width/8;
+   ctx.fillStyle="#58647d";ctx.fillRect(x,canvas.height*.45,canvas.width/10,canvas.height*.34);
+   ctx.fillStyle="#f9dc86";
+   for(let j=0;j<3;j++)ctx.fillRect(x+10+j*18,canvas.height*.49,8,12);
   }
-  const name=document.createElement("div");
-  name.className="assetName";
-  name.textContent=obj.name||"Object";
-  el.appendChild(name);
-  el.addEventListener("pointerdown",startDrag);
-  el.addEventListener("click",e=>{
-   e.stopPropagation();
-   selectedId=obj.id;
-   updateControls();
-   renderStage();
-  });
-  document.getElementById("objects").appendChild(el);
+ }
+ if(s.background==="horror"){
+  ctx.fillStyle="rgba(0,0,0,.35)";ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="#18241c";
+  for(let i=0;i<5;i++){
+   let x=i*canvas.width/4;
+   ctx.fillRect(x,canvas.height*.35,18,canvas.height*.45);
+   ctx.beginPath();ctx.arc(x+9,canvas.height*.34,canvas.width*.09,0,Math.PI*2);ctx.fill();
+  }
+ }
+}
+function characterData(s){
+ return characters.find(c=>c.id===s.characterId)||characters[0]||{};
+}
+function drawCharacter(s){
+ const c=characterData(s);
+ if(customCharacter){
+  const w=canvas.width*.25*(s.scale||1);
+  const h=w*1.4;
+  ctx.drawImage(customCharacter,canvas.width*.5-w/2,canvas.height*.7-h,w,h);
+  return;
+ }
+ if(window.AnimStudioRig&&c){
+  const x=canvas.width*(Number(s.x??50)/100);
+  const y=canvas.height*(Number(s.y??70)/100);
+  const scale=(canvas.width/720)*Number(s.scale||1);
+  AnimStudioRig.draw(ctx,c,s.animation||"idle",clock,x,y,scale);
+ }
+}
+function drawObjects(s){
+ (s.objects||[]).forEach(o=>{
+  const x=canvas.width*(o.x/100),y=canvas.height*(o.y/100);
+  const size=o.size||90;
+  if(o.assetId&&objectImages[o.assetId]){
+   const img=objectImages[o.assetId];
+   const ratio=img.width/img.height||1;
+   ctx.drawImage(img,x-size/2,y-size/(2*ratio),size,size/ratio);
+  }else{
+   ctx.font=size+"px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
+   ctx.fillText(o.emoji||"⭐",x,y);
+  }
+  if(selected.type==="object"&&selected.id===o.id){
+   ctx.strokeStyle="#ffe45e";ctx.lineWidth=3;
+   ctx.strokeRect(x-size/2,y-size/2,size,size);
+  }
  });
- updateControls();
 }
-
-function startDrag(e){
- const el=e.currentTarget;
- const id=el.dataset.id;
- selectedId=id;
- const obj=scene().objects.find(o=>o.id===id);
- if(!obj)return;
- const rect=document.getElementById("stage").getBoundingClientRect();
- drag={id,rect};
- el.setPointerCapture(e.pointerId);
- const move=ev=>{
-  if(!drag)return;
-  const x=Math.max(0,Math.min(100,(ev.clientX-rect.left)/rect.width*100));
-  const y=Math.max(0,Math.min(100,(ev.clientY-rect.top)/rect.height*100));
-  obj.x=Math.round(x);obj.y=Math.round(y);
-  el.style.left=obj.x+"%";el.style.top=obj.y+"%";
-  document.getElementById("posX").value=obj.x;
-  document.getElementById("posY").value=obj.y;
- };
- const end=()=>{
-  drag=null;
-  el.removeEventListener("pointermove",move);
-  el.removeEventListener("pointerup",end);
-  saveProject(false);
- };
- el.addEventListener("pointermove",move);
- el.addEventListener("pointerup",end);
- updateControls();
+function render(){
+ const s=current();if(!s)return;
+ drawBackground(s);
+ drawObjects(s);
+ drawCharacter(s);
+ if(selected.type==="character"){
+  const x=canvas.width*(Number(s.x??50)/100),y=canvas.height*(Number(s.y??70)/100);
+  ctx.strokeStyle="#ffe45e";ctx.lineWidth=2;
+  ctx.strokeRect(x-canvas.width*.13,y-canvas.height*.3,canvas.width*.26,canvas.height*.32);
+ }
 }
-
-function updateControls(){
- const o=scene().objects.find(x=>x.id===selectedId);
- document.getElementById("size").value=o?.size||110;
- document.getElementById("posX").value=o?.x||50;
- document.getElementById("posY").value=o?.y||55;
+function addObject(emoji,name){
+ const s=current();if(!s)return;
+ const o={id:"obj_"+Date.now(),kind:"emoji",emoji,name,x:50,y:55,size:90};
+ s.objects.push(o);selected={type:"object",id:o.id};
+ syncSelectionControls();render();
 }
-
-function changeSize(v){
- const o=scene().objects.find(x=>x.id===selectedId);
- if(!o)return;
- o.size=Number(v);renderStage();saveProject(false);
+async function uploadObject(){
+ const file=$("objectUpload").files[0];if(!file)return alert("Pehle image choose karo.");
+ const id=await storeAsset(file,file.name);
+ const asset=await getAsset(id);
+ const url=URL.createObjectURL(asset.blob),img=new Image();
+ img.onload=()=>{objectImages[id]=img;};
+ img.src=url;
+ const s=current();
+ const o={id:"obj_"+Date.now(),kind:"upload",name:file.name,assetId:id,x:50,y:55,size:130};
+ s.objects.push(o);selected={type:"object",id:o.id};
+ syncSelectionControls();render();
 }
-function changePosition(){
- const o=scene().objects.find(x=>x.id===selectedId);
- if(!o)return;
- o.x=Number(document.getElementById("posX").value);
- o.y=Number(document.getElementById("posY").value);
- renderStage();saveProject(false);
-}
-function changeDuration(v){
- scene().duration=Math.max(1,Math.min(300,Number(v)||5));
- saveProject(false);
-}
-function clearSelection(){selectedId=null;renderStage()}
-function removeSelected(){
- if(!selectedId)return;
- scene().objects=scene().objects.filter(o=>o.id!==selectedId);
- selectedId=null;renderAll();saveProject(false);
-}
-function bringFront(){
- const arr=scene().objects;
- const i=arr.findIndex(o=>o.id===selectedId);
- if(i<0)return;
- const [o]=arr.splice(i,1);arr.push(o);
- renderStage();saveProject(false);
-}
-function sendBack(){
- const arr=scene().objects;
- const i=arr.findIndex(o=>o.id===selectedId);
- if(i<0)return;
- const [o]=arr.splice(i,1);arr.unshift(o);
- renderStage();saveProject(false);
-}
-
-function changeBackground(v){
- scene().background=v;
- if(v!=="custom")scene().backgroundAsset=null;
- renderStage();saveProject(false);
+async function uploadCharacter(){
+ const file=$("characterUpload").files[0];if(!file)return alert("Pehle character image choose karo.");
+ const id=await storeAsset(file,file.name);
+ const asset=await getAsset(id);
+ const url=URL.createObjectURL(asset.blob),img=new Image();
+ img.onload=()=>{customCharacter=img;render();};
+ img.src=url;
+ $("status").textContent="Custom character added. Ye image-based character hai, rigged character nahi.";
 }
 async function uploadBackground(){
- const file=document.getElementById("backgroundFile").files[0];
- if(!file)return;
- if(!file.type.startsWith("image/"))return alert("Image select karo.");
- const item={id:uid(),name:file.name,type:"background",mime:file.type,blob:file,created:Date.now()};
- await putAsset(item);
- assets=await getAssets();
- scene().background="custom";
- scene().backgroundAsset=item.id;
- renderStage();saveProject(false);
+ const file=$("backgroundUpload").files[0];if(!file)return alert("Pehle background image choose karo.");
+ const url=URL.createObjectURL(file),img=new Image();
+ img.onload=()=>{backgroundImage=img;render();};
+ img.src=url;
 }
-
-function renderObjects(){
- const box=document.getElementById("assetList");
- const arr=scene().objects||[];
- if(!arr.length){box.textContent="No objects added yet.";return}
- box.innerHTML="";
- arr.forEach(o=>{
-  const chip=document.createElement("button");
-  chip.className="assetChip";
-  chip.textContent=(o.kind==="emoji"?o.emoji+" ":"🧩 ")+o.name;
-  chip.onclick=()=>{selectedId=o.id;renderStage()};
-  box.appendChild(chip);
- });
+function findSelected(){
+ const s=current();if(!s)return null;
+ if(selected.type==="character")return s;
+ return s.objects.find(o=>o.id===selected.id)||null;
 }
-
-function renderSceneList(){
- const box=document.getElementById("sceneList");
- box.innerHTML="";
- project.scenes.forEach((s,i)=>{
-  const row=document.createElement("div");
-  row.className="sceneItem";
-  const title=document.createElement("span");
-  title.textContent=(i+1)+". Scene • "+(s.duration||5)+" sec";
-  const open=document.createElement("button")
-  open.onclick=()=>{currentScene=i;selectedId=null;renderAll()};
-  row.append(title,open);
-  box.appendChild(row);
- });
+function syncSelectionControls(){
+ const item=findSelected();if(!item)return;
+ $("selectedInfo").textContent=selected.type==="character"?"Selected: Character":"Selected: "+(item.name||"Object");
+ $("posX").value=item.x??50;$("posY").value=item.y??70;
+ $("itemSize").value=selected.type==="character"?Number(current().scale||1)*100:(item.size||90);
 }
-
+function updateSelected(){
+ const item=findSelected();if(!item)return;
+ item.x=Number($("posX").value);item.y=Number($("posY").value);
+ if(selected.type==="character"){
+  current().scale=Number($("itemSize").value)/100;
+  $("charSize").value=current().scale;
+ }else item.size=Number($("itemSize").value);
+ render();
+}
+function deleteSelected(){
+ const s=current();if(!s)return;
+ if(selected.type==="object")s.objects=s.objects.filter(o=>o.id!==selected.id);
+ selected={type:"character",id:"character"};syncSelectionControls();render();
+}
+function moveLayer(dir){
+ const s=current();if(!s||selected.type!=="object")return;
+ const i=s.objects.findIndex(o=>o.id===selected.id),j=i+dir;
+ if(i<0||j<0||j>=s.objects.length)return;
+ [s.objects[i],s.objects[j]]=[s.objects[j],s.objects[i]];
+ render();
+}
+canvas.addEventListener("pointerdown",e=>{
+ const r=canvas.getBoundingClientRect();
+ const x=(e.clientX-r.left)*canvas.width/r.width;
+ const y=(e.clientY-r.top)*canvas.height/r.height;
+ const s=current();if(!s)return;
+ let found=null;
+ for(let i=s.objects.length-1;i>=0;i--){
+  const o=s.objects[i],ox=canvas.width*o.x/100,oy=canvas.height*o.y/100;
+  if(Math.abs(x-ox)<(o.size||90)&&Math.abs(y-oy)<(o.size||90)){found=o;break;}
+ }
+ if(found){selected={type:"object",id:found.id};}
+ else selected={type:"character",id:"character"};
+ syncSelectionControls();dragging=true;dragTarget={x,y};
+ canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener("pointermove",e=>{
+ if(!dragging)return;
+ const r=canvas.getBoundingClientRect();
+ const x=(e.clientX-r.left)*canvas.width/r.width;
+ const y=(e.clientY-r.top)*canvas.height/r.height;
+ const item=findSelected();if(!item)return;
+ item.x=Math.max(0,Math.min(100,x/canvas.width*100));
+ item.y=Math.max(0,Math.min(100,y/canvas.height*100));
+ syncSelectionControls();render();
+});
+canvas.addEventListener("pointerup",()=>{dragging=false;});
 function addScene(){
- project.scenes.push(defaultScene());
- currentScene=project.scenes.length-1;
- selectedId=null;renderAll();saveProject(false);
+ project.scenes.push(newScene());sceneIndex=project.scenes.length-1;
+ loadSceneControls();
 }
 function duplicateScene(){
- const copy=JSON.parse(JSON.stringify(scene()));
- copy.id=uid();
- copy.objects=copy.objects.map(o=>({...o,id:uid()}));
- project.scenes.splice(currentScene+1,0,copy);
- currentScene++;selectedId=null;renderAll();saveProject(false);
+ const s=current();if(!s)return;
+ const copy=JSON.parse(JSON.stringify(s));copy.id="scene_"+Date.now();copy.name=s.name+" Copy";
+ project.scenes.splice(sceneIndex+1,0,copy);sceneIndex++;
+ loadSceneControls();
 }
 function deleteScene(){
- if(project.scenes.length<=1)return alert("Kam se kam ek scene hona zaroori hai.");
- project.scenes.splice(currentScene,1);
- currentScene=Math.max(0,currentScene-1);
- selectedId=null;renderAll();saveProject(false);
-  }
- function deleteScene(){
- if(project.scenes.length<=1)return alert("Kam se kam ek scene hona zaroori hai.");
- project.scenes.splice(currentScene,1);
- currentScene=Math.max(0,currentScene-1);
- selectedId=null;renderAll();saveProject(false);
+ if(project.scenes.length<=1)return alert("Kam se kam ek scene rehna chahiye.");
+ project.scenes.splice(sceneIndex,1);sceneIndex=Math.max(0,sceneIndex-1);loadSceneControls();
 }
-
-function playPreview(){
- stopPreview();
- const objects=document.querySelectorAll(".asset video");
- objects.forEach(v=>v.play().catch(()=>{}));
- document.getElementById("status").textContent="Preview running. GIF/video assets will play if supported by browser.";
+function renderSceneList(){
+ const el=$("sceneList");el.innerHTML="";
+ project.scenes.forEach((s,i)=>{
+  const b=document.createElement("button");
+  b.className="sceneBtn"+(i===sceneIndex?" active":"");
+  b.textContent=(i+1)+". "+s.name;
+  b.onclick=()=>{sceneIndex=i;customCharacter=null;backgroundImage=null;loadSceneControls();};
+  el.appendChild(b);
+ });
 }
-function stopPreview(){
- document.querySelectorAll(".asset video").forEach(v=>v.pause());
- if(previewTimer)clearInterval(previewTimer);
- previewTimer=null;
-}
-
-function saveProject(show=true){
- project.name=document.getElementById("projectName").value||"My Animation Story";
- project.ratio=document.getElementById("ratio").value;
+function saveProject(){
  localStorage.setItem("animstudio_project",JSON.stringify(project));
- let projects=[];
- try{projects=JSON.parse(localStorage.getItem("animstudio_projects")||"[]")}catch(e){}
- if(!Array.isArray(projects))projects=[];
- const i=projects.findIndex(p=>p.id===project.id);
- const saved={...project,id:project.id||"project-main",updated:Date.now()};
- project.id=saved.id;
- if(i>=0)projects[i]=saved;else projects.push(saved);
+ let projects=[];try{projects=JSON.parse(localStorage.getItem("animstudio_projects")||"[]");}catch(e){}
+ const idx=projects.findIndex(p=>p.id===project.id);
+ if(idx>=0)projects[idx]=project;else projects.push(project);
  localStorage.setItem("animstudio_projects",JSON.stringify(projects));
- if(show)document.getElementById("status").textContent="✅ Project saved successfully.";
+ $("status").textContent="Project saved successfully!";
 }
-
-function exportProject(){
- saveProject(false);
+function exportJSON(){
+ saveProject();
  const blob=new Blob([JSON.stringify(project,null,2)],{type:"application/json"});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;a.download="animstudio-project.json";a.click();
- URL.revokeObjectURL(url);
- document.getElementById("status").textContent="Project JSON exported. Uploaded media files are stored separately in this browser.";
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+ a.download="animstudio-project.json";a.click();URL.revokeObjectURL(a.href);
 }
-
-document.getElementById("ratio").addEventListener("change",()=>{
- project.ratio=document.getElementById("ratio").value;
- renderStage();saveProject(false);
-});
-document.getElementById("projectName").addEventListener("change",()=>saveProject(false));
-document.getElementById("stage").addEventListener("click",e=>{
- if(e.target.id==="stage"||e.target.id==="ground")clearSelection();
-});
-
-(async function start(){
+function animate(){
+ clock+=0.035;render();requestAnimationFrame(animate);
+}
+async function init(){
+ try{db=await openDB();}catch(e){console.warn("Asset storage unavailable",e);}
+ loadCharacters();
  try{
-  await openDB();
-  assets=await getAssets();
-  initProject();
- }catch(e){
-  alert("Browser storage start nahi ho paya. Chrome mein page open karke try karo.");
-  initProject();
- }
-})();
+  const old=JSON.parse(localStorage.getItem("animstudio_project")||"null");
+  if(old&&Array.isArray(old.scenes)&&old.scenes.length)project=old;
+ }catch(e){}
+ if(!project.scenes.length)project.scenes=[newScene()];
+ project.scenes.forEach(s=>{if(!s.objects)s.objects=[];});
+ loadSceneControls();animate();
+}
+init();
 </script>
 </body>
 </html>
-
- 
