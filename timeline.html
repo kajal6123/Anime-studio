@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AnimStudio Timeline</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#10111c;color:white;font-family:Arial}
+header{padding:16px;background:#202235;display:flex;justify-content:space-between}
+a{color:#c4b5fd;text-decoration:none}
+main{max-width:850px;margin:auto;padding:16px}
+.panel{background:#202235;padding:16px;border-radius:14px;margin:14px 0}
+button{background:#8b5cf6;color:white;border:0;padding:10px 13px;border-radius:9px;margin:4px}
+button.red{background:#b83e55}
+input{background:#303249;color:white;border:1px solid #555;padding:10px;border-radius:8px;width:85px}
+.track{background:#303249;padding:13px;border-radius:10px;margin:12px 0}
+.bar{height:17px;background:#8b5cf6;border-radius:6px;margin:10px 0;min-width:10px}
+small{color:#aaa}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stats div{background:#303249;padding:12px;border-radius:10px;flex:1}
+</style>
+</head>
+<body>
+<header>
+<a href="editor.html">← Editor</a>
+<b>⏱️ Timeline Studio</b>
+<a href="audio.html">Audio →</a>
+</header>
+<main>
+<div class="panel">
+<h2>🎬 Project Timeline</h2>
+<div class="stats">
+<div><small>Total Scenes</small><h2 id="count">0</h2></div>
+<div><small>Total Duration</small><h2 id="total">0 sec</h2></div>
+</div>
+</div>
+
+<div class="panel">
+<h3>Scene Tracks</h3>
+<div id="tracks"></div>
+<p id="empty">No scenes found. Create scenes in Editor first.</p>
+</div>
+
+<div class="panel">
+<h3>Selected Scene Timing</h3>
+<p id="selectedName">Select a scene</p>
+<label>Duration (seconds)</label><br>
+<input id="duration" type="number" min="1" max="3600" value="5">
+<button onclick="updateDuration()">Update</button>
+<div>
+<button onclick="moveScene(-1)">↑ Move Earlier</button>
+<button onclick="moveScene(1)">↓ Move Later</button>
+<button class="red" onclick="deleteScene()">Delete Scene</button>
+</div>
+</div>
+
+<div class="panel">
+<h3>💾 Save Timeline</h3>
+<button onclick="save()">Save Project</button>
+<button onclick="download()">Export Project JSON</button>
+</div>
+</main>
+
+<script>
+let project={scenes:[]};
+let selected=-1;
+
+function load(){
+try{
+project=JSON.parse(localStorage.getItem("animstudio_project"))||{scenes:[]};
+if(!Array.isArray(project.scenes))project.scenes=[];
+}catch(e){project={scenes:[]};}
+render();
+}
+
+function render(){
+const box=document.getElementById("tracks");
+box.innerHTML="";
+let total=0;
+project.scenes.forEach((s,i)=>{
+const duration=Math.max(1,Number(s.duration)||1);
+total+=duration;
+
+const card=document.createElement("div");
+card.className="track";
+card.style.border=selected===i?"2px solid #a78bfa":"2px solid transparent";
+
+const title=document.createElement("b");
+title.textContent=(i+1)+". "+(s.name||"Scene "+(i+1));
+
+const time=document.createElement("small");
+time.textContent=" • "+duration+" seconds";
+
+const bar=document.createElement("div");
+bar.className="bar";
+bar.style.width=Math.max(5,Math.min(100,duration/Math.max(1,total)*100))+"%";
+
+const audio=document.createElement("small");
+audio.textContent=s.audio?"🎵 "+s.audio.name:"No audio assigned";
+
+const btn=document.createElement("button");
+btn.textContent="Select Scene";
+btn.onclick=()=>{selected=i;render()};
+
+card.append(title,time,bar,document.createElement("br"),audio,document.createElement("br"),btn);
+box.appendChild(card);
+});
+
+document.getElementById("count").textContent=project.scenes.length;
+document.getElementById("total").textContent=total+" sec";
+document.getElementById("empty").style.display=project.scenes.length?"none":"block";
+
+if(selected>=0&&project.scenes[selected]){
+const s=project.scenes[selected];
+document.getElementById("selectedName").textContent=s.name;
+document.getElementById("duration").value=s.duration||5;
+}else{
+document.getElementById("selectedName").textContent="Select a scene";
+}
+}
+
+function updateDuration(){
+if(selected<0)return alert("Select a scene first");
+const value=Number(document.getElementById("duration").value);
+if(!Number.isFinite(value)||value<1||value>3600)return alert("Enter 1 to 3600 seconds");
+project.scenes[selected].duration=value;
+render();
+}
+
+function moveScene(direction){
+if(selected<0)return;
+const target=selected+direction;
+if(target<0||target>=project.scenes.length)return;
+[project.scenes[selected],project.scenes[target]]=
+[project.scenes[target],project.scenes[selected]];
+selected=target;
+render();
+}
+
+function deleteScene(){
+if(selected<0)return;
+if(!confirm("Delete this scene?"))return;
+project.scenes.splice(selected,1);
+selected=project.scenes.length?Math.min(selected,project.scenes.length-1):-1;
+render();
+}
+
+function save(){
+localStorage.setItem("animstudio_project",JSON.stringify(project));
+alert("Timeline saved!");
+}
+
+function download(){
+const blob=new Blob([JSON.stringify(project,null,2)],{type:"application/json"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");
+a.href=url;
+a.download="animstudio-timeline.json";
+a.click();
+URL.revokeObjectURL(url);
+}
+load();
+</script>
+</body>
+</html>
