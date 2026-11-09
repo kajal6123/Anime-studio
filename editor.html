@@ -34,7 +34,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 200px;
+            max-width: 180px;
         }
         .nav-btns button {
             background: #ff6b6b;
@@ -62,48 +62,63 @@
             background-size: cover;
             background-position: center;
             position: relative;
+            touch-action: none;
         }
         /* Draggable Character on Canvas */
-        .canvas-character {
+        .canvas-item {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 60px;
-            cursor: grab;
+            font-size: 50px;
+            cursor: pointer;
             user-select: none;
-            transition: transform 0.2s;
+            padding: 5px;
+            border: 2px dashed transparent;
         }
-        .canvas-character.animate {
-            animation: bounce 0.6s infinite alternate;
+        .canvas-item.selected {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 8px;
         }
-        @keyframes bounce {
-            from { transform: translate(-50%, -50%) scale(1); }
-            to { transform: translate(-50%, -50%) scale(1.1) translateY(-10px); }
+
+        /* Animations */
+        .anim-sleep { animation: sleepAnim 1.5s infinite alternate; }
+        .anim-eat { animation: eatAnim 0.4s infinite alternate; }
+        .anim-walk { animation: walkAnim 0.6s infinite alternate; }
+
+        @keyframes sleepAnim {
+            from { transform: rotate(0deg) scale(1); }
+            to { transform: rotate(-15deg) scale(1.05); }
+        }
+        @keyframes eatAnim {
+            from { transform: scale(1); }
+            to { transform: scale(1.1) translateY(-5px); }
+        }
+        @keyframes walkAnim {
+            from { transform: translateX(0); }
+            to { transform: translateX(15px); }
         }
 
         /* Bottom Toolbox */
         .toolbox {
             background: #2d2d2d;
-            padding: 12px;
+            padding: 10px;
             border-top: 1px solid #444;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
         .tool-row {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             overflow-x: auto;
-            padding-bottom: 5px;
+            padding-bottom: 4px;
         }
         .tool-btn {
             background: #3d3d3d;
             color: white;
             border: 1px solid #555;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 13px;
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-size: 12px;
             white-space: nowrap;
             cursor: pointer;
         }
@@ -130,36 +145,46 @@
     <!-- Canvas / Scene Board -->
     <div class="workspace">
         <div id="sceneCanvas" style="background-color: #e0f7fa;">
-            <!-- Character added on canvas -->
-            <div id="activeCharacter" class="canvas-character" draggable="true">🤖</div>
+            <!-- Characters will be added here dynamically -->
         </div>
     </div>
 
     <!-- Bottom Toolbox Panel -->
     <div class="toolbox">
+        <!-- Background Tools -->
         <div class="tool-row">
-            <button class="tool-btn" onclick="changeBg('#e0f7fa')">🎨 Sky BG</button>
-            <button class="tool-btn" onclick="changeBg('#e8f5e9')">🌳 Park BG</button>
-            <button class="tool-btn" onclick="changeBg('#212121')">🌙 Night BG</button>
-            <button class="tool-btn" onclick="triggerBgUpload()">📁 Custom BG</button>
+            <small style="color:#aaa; align-self:center;">BG:</small>
+            <button class="tool-btn" onclick="changeBg('#e0f7fa')">🎨 Sky</button>
+            <button class="tool-btn" onclick="changeBg('#e8f5e9')">🌳 Park</button>
+            <button class="tool-btn" onclick="changeBg('#212121')">🌙 Night</button>
+            <button class="tool-btn" onclick="triggerBgUpload()">📁 Custom</button>
             <input type="file" id="bgUploadInput" style="display: none;" accept="image/*" onchange="uploadBg(event)">
         </div>
+        <!-- Character Addition -->
         <div class="tool-row">
-            <button class="tool-btn" onclick="setChar('🤖')">🤖 Robot</button>
-            <button class="tool-btn" onclick="setChar('🐱')">🐱 Cat</button>
-            <button class="tool-btn" onclick="setChar('👧')">👧 Girl</button>
-            <button class="tool-btn" onclick="setChar('🦸‍♂️')">🦸‍♂️ Hero</button>
-            <button class="tool-btn" onclick="toggleAnimation()">⚡ Toggle Action</button>
+            <small style="color:#aaa; align-self:center;">Add:</small>
+            <button class="tool-btn" onclick="addCharacter('🤖')">+ 🤖 Robot</button>
+            <button class="tool-btn" onclick="addCharacter('🐱')">+ 🐱 Cat</button>
+            <button class="tool-btn" onclick="addCharacter('👧')">+ 👧 Girl</button>
+            <button class="tool-btn" onclick="addCharacter('🦸‍♂️')">+ 🦸‍♂️ Hero</button>
+        </div>
+        <!-- Actions & Poses for Selected Character -->
+        <div class="tool-row">
+            <small style="color:#aaa; align-self:center;">Action:</small>
+            <button class="tool-btn" onclick="setυAction('anim-sleep')">🛌 Sleep</button>
+            <button class="tool-btn" onclick="setυAction('anim-eat')">🍎 Eat</button>
+            <button class="tool-btn" onclick="setυAction('anim-walk')">🚶 Walk</button>
+            <button class="tool-btn" onclick="setυAction('')">❌ Normal</button>
+            <button class="tool-btn" onclick="deleteSelected()" style="background:#e03131;">🗑️ Delete</button>
         </div>
     </div>
 
     <script>
-        // Load Project Details from localStorage
         document.getElementById('projectTitle').innerText = localStorage.getItem('currentProject') || 'Untitled Project';
         document.getElementById('projectStyle').innerText = "Style: " + (localStorage.getItem('currentStyle') || '2D Cartoon');
 
         let canvas = document.getElementById('sceneCanvas');
-        let character = document.getElementById('activeCharacter');
+        let selectedItem = null;
 
         // Change Background Color
         function changeBg(color) {
@@ -167,7 +192,6 @@
             canvas.style.backgroundColor = color;
         }
 
-        // Custom Background Upload
         function triggerBgUpload() {
             document.getElementById('bgUploadInput').click();
         }
@@ -183,23 +207,114 @@
             }
         }
 
-        // Change Character Emoji/Asset
-        function setChar(emoji) {
-            character.innerText = emoji;
+        // Add Character to Canvas
+        function addCharacter(emoji) {
+            let item = document.createElement('div');
+            item.className = 'canvas-item selected';
+            item.innerText = emoji;
+            item.style.left = '40%';
+            item.style.top = '40%';
+
+            // Deselect others
+            document.querySelectorAll('.canvas-item').forEach(el => el.classList.remove('selected'));
+
+            // Select on click & make draggable
+            item.onclick = (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.canvas-item').forEach(el => el.classList.remove('selected'));
+                item.classList.add('selected');
+                selectedItem = item;
+            };
+
+            makeDraggable(item);
+            canvas.appendChild(item);
+            selectedItem = item;
         }
 
-        // Toggle Character Animation / Movement
-        function toggleAnimation() {
-            character.classList.toggle('animate');
+        // Make item draggable on mobile & desktop
+        function makeDraggable(elmnt) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            elmnt.onmousedown = dragMouseDown;
+            elmnt.ontouchstart = dragTouchStart;
+
+            function dragMouseDown(e) {
+                e.preventDefault();
+                selectedItem = elmnt;
+                document.querySelectorAll('.canvas-item').forEach(el => el.classList.remove('selected'));
+                elmnt.classList.add('selected');
+
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+
+            function dragTouchStart(e) {
+                selectedItem = elmnt;
+                document.querySelectorAll('.canvas-item').forEach(el => el.classList.remove('selected'));
+                elmnt.classList.add('selected');
+
+                let touch = e.touches[0];
+                pos3 = touch.clientX;
+                pos4 = touch.clientY;
+                document.ontouchend = closeTouchElement;
+                document.ontouchmove = elementTouchDrag;
+            }
+
+            function elementTouchDrag(e) {
+                let touch = e.touches[0];
+                pos1 = pos3 - touch.clientX;
+                pos2 = pos4 - touch.clientY;
+                    pos3 = touch.clientX;
+                pos4 = touch.clientY;
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+
+            function closeTouchElement() {
+                document.ontouchend = null;
+                document.ontouchmove = null;
+            }
         }
 
-        // Play Scene Action
+        // Apply Action/Pose to Selected Character
+        function setυAction(animClass) {
+            if (selectedItem) {
+                selectedItem.classList.remove('anim-sleep', 'anim-eat', 'anim-walk');
+                if (animClass) selectedItem.classList.add(animClass);
+            } else {
+                alert("Please select a character on canvas first!");
+            }
+        }
+
+        // Delete Selected Character
+        function deleteSelected() {
+            if (selectedItem) {
+                selectedItem.remove();
+                selectedItem = null;
+            }
+        }
+
+        // Play Scene
         function playScene() {
-            alert("Playing Scene! Action is live 🎬");
-            character.classList.add('animate');
+            alert("Scene is playing live with all character actions! 🎬✨");
         }
 
-        // Go Back Home
         function goBack() {
             window.location.href = "index.html";
         }
