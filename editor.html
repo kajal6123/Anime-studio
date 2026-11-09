@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToonScene Editor</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: #1a1a1a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        /* Top Navigation Bar */
+        .navbar {
+            background: #2d2d2d;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #444;
+        }
+        .navbar h2 {
+            font-size: 16px;
+            color: #ff6b6b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+        .nav-btns button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        /* Main Workspace Canvas Area */
+        .workspace {
+            flex: 1;
+            position: relative;
+            background: #fff;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #sceneCanvas {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        /* Draggable Character on Canvas */
+        .canvas-character {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 60px;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+        .canvas-character.animate {
+            animation: bounce 0.6s infinite alternate;
+        }
+        @keyframes bounce {
+            from { transform: translate(-50%, -50%) scale(1); }
+            to { transform: translate(-50%, -50%) scale(1.1) translateY(-10px); }
+        }
+
+        /* Bottom Toolbox */
+        .toolbox {
+            background: #2d2d2d;
+            padding: 12px;
+            border-top: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .tool-row {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .tool-btn {
+            background: #3d3d3d;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .tool-btn:hover {
+            background: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <div class="navbar">
+        <div>
+            <h2 id="projectTitle">Project Name</h2>
+            <small id="projectStyle" style="color: #aaa; font-size: 11px;">Style</small>
+        </div>
+        <div class="nav-btns">
+            <button onclick="playScene()" style="background: #51cf66;">▶ Play</button>
+            <button onclick="goBack()">🏠 Exit</button>
+        </div>
+    </div>
+
+    <!-- Canvas / Scene Board -->
+    <div class="workspace">
+        <div id="sceneCanvas" style="background-color: #e0f7fa;">
+            <!-- Character added on canvas -->
+            <div id="activeCharacter" class="canvas-character" draggable="true">🤖</div>
+        </div>
+    </div>
+
+    <!-- Bottom Toolbox Panel -->
+    <div class="toolbox">
+        <div class="tool-row">
+            <button class="tool-btn" onclick="changeBg('#e0f7fa')">🎨 Sky BG</button>
+            <button class="tool-btn" onclick="changeBg('#e8f5e9')">🌳 Park BG</button>
+            <button class="tool-btn" onclick="changeBg('#212121')">🌙 Night BG</button>
+            <button class="tool-btn" onclick="triggerBgUpload()">📁 Custom BG</button>
+            <input type="file" id="bgUploadInput" style="display: none;" accept="image/*" onchange="uploadBg(event)">
+        </div>
+        <div class="tool-row">
+            <button class="tool-btn" onclick="setChar('🤖')">🤖 Robot</button>
+            <button class="tool-btn" onclick="setChar('🐱')">🐱 Cat</button>
+            <button class="tool-btn" onclick="setChar('👧')">👧 Girl</button>
+            <button class="tool-btn" onclick="setChar('🦸‍♂️')">🦸‍♂️ Hero</button>
+            <button class="tool-btn" onclick="toggleAnimation()">⚡ Toggle Action</button>
+        </div>
+    </div>
+
+    <script>
+        // Load Project Details from localStorage
+        document.getElementById('projectTitle').innerText = localStorage.getItem('currentProject') || 'Untitled Project';
+        document.getElementById('projectStyle').innerText = "Style: " + (localStorage.getItem('currentStyle') || '2D Cartoon');
+
+        let canvas = document.getElementById('sceneCanvas');
+        let character = document.getElementById('activeCharacter');
+
+        // Change Background Color
+        function changeBg(color) {
+            canvas.style.backgroundImage = 'none';
+            canvas.style.backgroundColor = color;
+        }
+
+        // Custom Background Upload
+        function triggerBgUpload() {
+            document.getElementById('bgUploadInput').click();
+        }
+
+        function uploadBg(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    canvas.style.backgroundImage = `url('${e.target.result}')`;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Change Character Emoji/Asset
+        function setChar(emoji) {
+            character.innerText = emoji;
+        }
+
+        // Toggle Character Animation / Movement
+        function toggleAnimation() {
+            character.classList.toggle('animate');
+        }
+
+        // Play Scene Action
+        function playScene() {
+            alert("Playing Scene! Action is live 🎬");
+            character.classList.add('animate');
+        }
+
+        // Go Back Home
+        function goBack() {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
